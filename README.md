@@ -1,5 +1,8 @@
 # AWS 運用アシスタント（AWS Amplify Gen 2 + AgentCore）
 
+[![CI - Web App](https://github.com/jus2024/aws-operation-agent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jus2024/aws-operation-agent/actions/workflows/ci.yml)
+[![License: MIT-0](https://img.shields.io/badge/License-MIT--0-blue.svg)](LICENSE)
+
 AWS Amplify Gen 2 で構築した業務 Web アプリケーションに、AWS リソースを操作できる
 AI エージェントを組み込んだサンプルアプリケーションです。ユーザーはブラウザのチャット
 画面から自然言語で AWS リソース（S3、EC2、CloudFormation など）を問い合わせ・操作でき、
@@ -130,6 +133,11 @@ npm run dev
 デプロイが必要です。ローカルではエージェント単体の起動確認（`agentcore dev` / `uvicorn`）
 のみ可能で、フロントエンドとの結合テストは Amplify Hosting のデプロイ環境で行います
 （SigV4 署名にコンピューティングロールが必要なため）。
+
+> **最初に**: このリポジトリは公開用に、AWS アカウント ID やリソース ID を
+> `<YOUR_AWS_ACCOUNT_ID>` などのプレースホルダに置き換えてあります。埋める値・取得方法・
+> 埋める順序は [docs/setup.md のプレースホルダと ID の埋め方](docs/setup.md#プレースホルダと-id-の埋め方エージェント機能を使う場合)
+> にまとめてあります。以下の手順の前に一読してください。
 
 ### 1. AWS 側でロール用の IAM ロールを準備する
 
@@ -549,7 +557,7 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
 Amplify バックエンド（`amplify/backend.ts`）と AgentCore CDK スタック
 （`agents/agentcore/agentcore.json` の `tags`）の両方に `Project` / `Environment`
 タグを設定しています。コスト配分レポート（AWS Billing → コスト配分タグ）で
-`Project=agent-for-aws-mcp-server` で絞り込むと、このアプリに関連する
+`Project=aws-operation-agent` で絞り込むと、このアプリに関連する
 AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime 等）の
 コストをまとめて確認できます。
 
@@ -565,8 +573,11 @@ AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime
   （`aws-targets.json`）で分けて運用する場合は、それぞれの `agentcore.json` で
   値を変更してください。
 
-自分のプロジェクトとして使う場合は、両方の `Project` の値を実際のプロジェクト名に
-変更してください。
+自分のプロジェクトとして使う場合は、両方の `Project` の値（`amplify/backend.ts` の
+`backendTags.add('Project', ...)` と `agents/agentcore/agentcore.json` の `tags.Project`）を
+実際のプロジェクト名に変更してください。**2箇所は必ず同じ値に揃えてください**（片方だけ
+変えるとコスト配分レポートが2つに分断されます）。値を変更した場合は、次回の
+`npx ampx pipeline-deploy` / `agentcore deploy` でタグが差し替わります。
 
 ## セキュリティに関する注意事項
 
@@ -611,6 +622,9 @@ agentcore deploy
 npx ampx sandbox delete
 ```
 
+手動で作成した `AgentMCPAdminRole` / `AgentMCPReadOnlyRole` は CDK 管理外のため、
+不要になったら手動で削除してください（[docs/environments.md](docs/environments.md#リソースの削除)）。
+
 ---
 
 ## ブランチ戦略と CI/CD
@@ -621,10 +635,24 @@ npx ampx sandbox delete
 | `develop` | 統合ブランチ |
 | `feature/*` | 実装作業用 |
 
+各ブランチがどの AWS リソース（Cognito・RoleConfig テーブル・AgentCore Runtime）に対応するかは
+[docs/environments.md](docs/environments.md) にまとめています。
+
 | 対象 | 品質ゲート（GitHub Actions） | デプロイ |
 |------|------------------------------|---------|
-| Web アプリ | lint、型チェック | Amplify Hosting（Git push で自動） |
-| エージェント | lint（ruff）、インポート確認 | AgentCore CLI（`agentcore deploy`、手動） |
+| Web アプリ | `.github/workflows/ci.yml` — lint（ESLint）、型チェック（`tsc --noEmit`） | Amplify Hosting（Git push で自動） |
+| エージェント | なし（CI 未設定）。ローカルで `ruff check .` と `pytest` を実行する | AgentCore CLI（`agentcore deploy`、手動） |
+
+`ci.yml` は `agents/**` / `docs/**` / `.kiro/**` / `*.md` を `paths-ignore` しているため、
+エージェントコードのみの変更では CI が起動しません。エージェント側の検証は
+`agents/app/AWS_MCP_Agent/` で手元から実行してください。
+
+```bash
+cd agents/app/AWS_MCP_Agent
+source .venv/bin/activate
+pytest              # 単体テスト（pyproject.toml の dev 依存グループに含まれる）
+uvx ruff check .    # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
+```
 
 ## サンプルの除去
 
@@ -641,7 +669,8 @@ npx ampx sandbox delete
 
 | ドキュメント | 内容 |
 |-------------|------|
-| [docs/setup.md](docs/setup.md) | セットアップ詳細・前提条件・ローカル開発の制限事項 |
+| [docs/setup.md](docs/setup.md) | セットアップ詳細・前提条件・プレースホルダの埋め方・ローカル開発の制限事項 |
+| [docs/environments.md](docs/environments.md) | 環境と運用（sandbox / ステージング / 本番の対応関係、環境変数の設定場所、環境を作り直したときの更新手順） |
 | [docs/deployment.md](docs/deployment.md) | デプロイ手順の詳細（Amplify + AgentCore + IAM 権限） |
 | [docs/architecture-aws-mcp.md](docs/architecture-aws-mcp.md) | AWS MCP エージェント接続アーキテクチャ、既知の制約 |
 | [docs/kiro-usage.md](docs/kiro-usage.md) | Kiro（IDE）の steering/skills の使い方 |
