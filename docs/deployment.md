@@ -34,7 +34,7 @@ Amplify Hosting（フロントエンド + Cognito）と AgentCore Runtime（エ�
 ┌─────────────────────────────────────────────────────────────┐
 │ AgentCore Runtime                                           │
 │                                                             │
-│  sample_agent (AG-UI プロトコル)                              │
+│  AWS_MCP_Agent / AWS_MCP_Agent_Prod (AG-UI プロトコル)         │
 │    └─ Strands Agent + ag-ui-strands                         │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -65,10 +65,13 @@ Amplify Hosting（フロントエンド + Cognito）と AgentCore Runtime（エ�
 
 ### ブランチ別デプロイ
 
-| ブランチ | 環境 |
-|---------|------|
-| `main` | 本番 |
-| `develop` | ステージング（任意） |
+| ブランチ | 環境 | 対応する AgentCore Runtime |
+|---------|------|---------------------------|
+| `main` | 本番 | `AWS_MCP_Agent_Prod` |
+| `develop` | ステージング（任意） | 既定では未割り当て（[environments.md](environments.md#環境の一覧) を参照） |
+
+各環境が指す Cognito ユーザープール・RoleConfig テーブル・Runtime の対応関係は
+[environments.md](environments.md) にまとめています。
 
 ### CI/CD の流れ
 
@@ -90,6 +93,14 @@ Push → GitHub Actions（lint / 型チェック）→ Amplify Hosting（ビル�
   ```
 - AWS 認証情報が設定済み
 - Docker が起動している（Container ビルドのため）
+- **プレースホルダ（`<YOUR_AWS_ACCOUNT_ID>` / `<SANDBOX_APPSYNC_API_ID>` /
+  `<PROD_APPSYNC_API_ID>` / `<YOUR_REGION>`）を自分の環境の値に置き換え済み**
+  — 埋める値と取得方法は
+  [setup.md のプレースホルダと ID の埋め方](setup.md#プレースホルダと-id-の埋め方エージェント機能を使う場合)
+  を参照。`<SANDBOX_APPSYNC_API_ID>` / `<PROD_APPSYNC_API_ID>` は RoleConfig テーブル名の
+  一部で、**手順 1（Amplify のデプロイ）を先に済ませないと値が分かりません**。
+  未置換のまま `agentcore deploy` すると、存在しない ARN を参照した IAM ポリシーが作られ、
+  実行時に `AccessDenied` になります
 
 ### 2-1. デプロイ
 
@@ -155,12 +166,15 @@ Amplify コンソール → アプリ → ホスティング → 環境変数:
 
 | キー | 値 | 説明 |
 |------|-----|------|
-| `AGENTCORE_RUNTIME_ARN` | 手順 2-2 で取得した ARN | `copilotkitStreamingRelay` Lambda の環境変数、および IAM ポリシーの `Resource` の両方に使われる（`NEXT_PUBLIC_` プレフィックスは不要。サーバーサイド専用） |
+| `AGENTCORE_RUNTIME_ARN` | 手順 2-2 で取得した ARN（本番は `AWS_MCP_Agent_Prod`） | `copilotkitStreamingRelay` Lambda の環境変数、および IAM ポリシーの `Resource` の両方に使われる（`NEXT_PUBLIC_` プレフィックスは不要。サーバーサイド専用） |
+| `AGENTCORE_MEMORY_ID` | `agentcore status` に表示される Memory ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`） | 会話履歴の読み出し（`bedrock-agentcore:ListEvents`）の呼び出しと IAM ポリシーの `Resource` に使われる。未設定だとポリシー自体が付与されず、過去セッションの履歴復元が 500 になる |
 | `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | `copilotkitStreamingRelay` の関数 URL | デプロイ後、`amplify_outputs.json` の `custom.copilotkitRelayUrl` で確認できる。`CopilotProvider.tsx` の `runtimeUrl` が参照する |
+| `ROLE_CONFIG_TABLE_NAME` | RoleConfig テーブル名（例: `RoleConfig-xxxxxxxx-NONE`） | `GET /api/roles` が DynamoDB を `Scan` する対象。`agents/agentcore/agentcore.json` の同名の値と同じテーブルを指すこと |
 
 設定後、再デプロイ（Amplify コンソールで「再ビルド」をトリガー、または Git push）が必要です。
-`AGENTCORE_RUNTIME_ARN` はバックエンドビルド（`npx ampx pipeline-deploy`）時に読まれるため、
-値を変更した場合はバックエンドの再デプロイも必要です。
+`AGENTCORE_RUNTIME_ARN` と `AGENTCORE_MEMORY_ID` はバックエンドビルド
+（`npx ampx pipeline-deploy`）の CDK synth 時に読まれるため、値を変更した場合は
+バックエンドの再デプロイも必要です。
 
 ---
 
@@ -170,7 +184,9 @@ Amplify コンソール → アプリ → ホスティング → 環境変数:
 
 1. Amplify Hosting の URL にアクセス
 2. Cognito でログイン
-3. `/sample` ページのエージェントチャットでメッセージを送信
+3. トップページで新規チャットを作成し、利用するロールを選んでメッセージを送信
+   （ロールが一覧に出ない場合は `ROLE_CONFIG_TABLE_NAME` と、管理者による
+   ロール登録が済んでいるかを確認）
 4. AG-UI ストリーミングで応答が表示されれば成功
 
 ### トラブルシューティング
@@ -182,6 +198,9 @@ Amplify コンソール → アプリ → ホスティング → 環境変数:
 | 500 Internal Server Error | `copilotkitStreamingRelay` の実行ロールの権限不足、または `AGENTCORE_RUNTIME_ARN` 未設定 | 手順 3・4 を確認 |
 | タイムアウト | AgentCore Runtime 未デプロイ | 手順 2 を確認 |
 | `SignatureDoesNotMatch` | リージョン不一致 | `copilotkitStreamingRelay/handler.ts`（または `relay.ts`）の `REGION` 定数と Runtime のリージョンを確認 |
+| 過去セッションを開くと履歴が復元されず 500 | `AGENTCORE_MEMORY_ID` 未設定（`ListEvents` の IAM ポリシーが付与されていない） | 手順 4 で `AGENTCORE_MEMORY_ID` を設定し、バックエンドを再デプロイ |
+| ロール一覧が空 / 新規チャットのダイアログがすぐ閉じる | `ROLE_CONFIG_TABLE_NAME` 未設定または誤り、または `agentcore.json` 側と値が不一致 | 手順 4 と `agents/agentcore/agentcore.json` の `ROLE_CONFIG_TABLE_NAME` を突き合わせる |
+| エージェントのツール呼び出しが `AccessDenied` | `cdk-stack.ts` のプレースホルダが未置換（存在しないロール/テーブル ARN を参照） | [setup.md のプレースホルダと ID の埋め方](setup.md#プレースホルダと-id-の埋め方エージェント機能を使う場合) を確認し、`agentcore deploy` を再実行 |
 
 CloudWatch Logs で詳細を確認:
 - `copilotkitStreamingRelay` Lambda のログ: `/aws/lambda/<関数名>`（Lambda 関数名は CloudFormation スタックの出力、または Lambda コンソールで確認）
@@ -264,7 +283,8 @@ npx ampx sandbox delete
 - 環境変数は Amplify コンソールで設定してください（シークレットをリポジトリにコミットしない）
 - Amplify のビルド環境は Docker 非対応のため、AgentCore Runtime を Amplify の CDK スタックに含めない
 - sandbox の Cognito と Amplify Hosting の Cognito は異なるため、sandbox 環境でのエージェント結合テストは不可
-- 結合テストは Amplify Hosting のデプロイ環境（develop ブランチ推奨）で行う
+  （結合テストは Amplify Hosting のデプロイ環境、`develop` ブランチ推奨。詳細は
+  [environments.md](environments.md#ローカルでできることできないこと)）
 - コンピューティングロールは Amplify が管理するため、ロール自体を削除しないこと
 - `copilotkitStreamingRelay`（CopilotKit Runtime の中継処理を行う Lambda 関数、`amplify/functions/copilotkitStreamingRelay/`）は
   Amplify Gen 2 のバックエンド定義の一部としてデプロイされるため、`agentcore deploy` の対象ではない

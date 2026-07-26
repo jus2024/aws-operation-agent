@@ -126,7 +126,7 @@ CopilotKit が AG-UI イベントのパース、メッセージ状態管理、�
 | `amplify/functions/copilotkitStreamingRelay/handler.ts` | CopilotKit Runtime + SigV4 → AgentCore の中継ハンドラー（ストリーミング対応） |
 | `src/components/agent/AgentChatSection.tsx` | チャット UI セクション（CopilotChat 使用） |
 | `src/lib/agent/CopilotProvider.tsx` | CopilotKit プロバイダー（Cognito トークン付与、`runtimeUrl` は関数 URL） |
-| `agents/app/sample_agent/main.py` | AG-UI サーバー（FastAPI + ag-ui-strands） |
+| `agents/app/AWS_MCP_Agent/main.py` | AG-UI サーバー（FastAPI + ag-ui-strands） |
 
 > `src/app/api/copilotkit/route.ts`（旧 Route Handler）は削除済みです。
 
@@ -150,7 +150,7 @@ CopilotKit が AG-UI イベントのパース、メッセージ状態管理、�
 
 ## カスタマイズ
 
-- エージェントのシステムプロンプトやツールは `agents/app/sample_agent/main.py` で変更
+- エージェントのシステムプロンプトやツールは `agents/app/AWS_MCP_Agent/main.py` で変更
 - CopilotKit の UI は `AgentChatSection.tsx` の `labels` やスタイルで調整
 - 新しいエージェントを追加する場合は `copilotkitStreamingRelay/handler.ts` の `agents` オブジェクトにも追加
 - AgentCore Memory 有効化時は `handler.ts` で `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` ヘッダーを追加
