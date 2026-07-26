@@ -640,8 +640,19 @@ npx ampx sandbox delete
 
 | 対象 | 品質ゲート（GitHub Actions） | デプロイ |
 |------|------------------------------|---------|
-| Web アプリ | lint、型チェック | Amplify Hosting（Git push で自動） |
-| エージェント | lint（ruff）、インポート確認 | AgentCore CLI（`agentcore deploy`、手動） |
+| Web アプリ | `.github/workflows/ci.yml` — lint（ESLint）、型チェック（`tsc --noEmit`） | Amplify Hosting（Git push で自動） |
+| エージェント | なし（CI 未設定）。ローカルで `ruff check .` と `pytest` を実行する | AgentCore CLI（`agentcore deploy`、手動） |
+
+`ci.yml` は `agents/**` / `docs/**` / `.kiro/**` / `*.md` を `paths-ignore` しているため、
+エージェントコードのみの変更では CI が起動しません。エージェント側の検証は
+`agents/app/AWS_MCP_Agent/` で手元から実行してください。
+
+```bash
+cd agents/app/AWS_MCP_Agent
+source .venv/bin/activate
+pytest              # 単体テスト（pyproject.toml の dev 依存グループに含まれる）
+uvx ruff check .    # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
+```
 
 ## サンプルの除去
 
