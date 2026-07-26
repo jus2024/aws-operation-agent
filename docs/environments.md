@@ -10,25 +10,57 @@
 
 ## 環境の一覧
 
+初期状態は **1 環境**の構成です。`agents/agentcore/agentcore.json` に定義されている Runtime は
+`AWS_MCP_Agent` の 1 つだけで、クローンしてデプロイするとこれが本番用の Runtime になります。
+
 | 環境 | フロントエンド | Amplify バックエンド（Cognito / AppSync / DynamoDB / 中継 Lambda） | AgentCore Runtime | 主な用途 |
 |------|---------------|--------------------------------------------------|------------------|---------|
 | ローカル（エージェント単体） | — | — | 使わない（`agentcore dev` / `uvicorn` で起動） | エージェントのロジック確認 |
-| ローカル + sandbox | `npm run dev`（localhost:3000） | `npx ampx sandbox`（開発者ごとに独立） | `AWS_MCP_Agent` | UI・バックエンドの反復開発 |
-| ステージング | Amplify Hosting `develop` | `develop` ブランチのバックエンド | 既定では未割り当て（後述） | 結合テスト |
-| 本番 | Amplify Hosting `main` | `main` ブランチのバックエンド | `AWS_MCP_Agent_Prod` | 本番運用 |
+| 本番 | Amplify Hosting `main` | `main` ブランチのバックエンド | `AWS_MCP_Agent` | 本番運用 |
+| ステージング（任意、後から追加） | Amplify Hosting `develop` | `develop` ブランチのバックエンド | `AWS_MCP_Agent_Dev`（自分で追加） | 改善版の検証 |
 
-`agents/agentcore/agentcore.json` に定義されている Runtime は `AWS_MCP_Agent`（sandbox 向け）と
-`AWS_MCP_Agent_Prod`（`main` 向け）の 2 つだけです。両方が `agentcore deploy` で同じ
-CloudFormation スタックに同時にデプロイされ、それぞれ独立した Runtime ARN・実行ロール・
-IAM 権限を持ちます。AgentCore Memory（`AWS_MCP_AgentMemory`）はプロジェクト内の全 Runtime で
-共有されます。
+`agentcore deploy` には Runtime を選んでデプロイするオプションがなく、`runtimes` 配列の
+全エントリが同じ CloudFormation スタックにまとめてデプロイされます。つまり配列に書いた数だけ
+Runtime が作られます。まず 1 つで本番を立ち上げ、改善サイクルを回す段階になってから
+ステージングを足す想定です。
 
-> **`develop` ブランチで結合テストする場合**: `develop` のバックエンドは sandbox でも `main` でも
-> ない 3 つ目の RoleConfig テーブルを生成します。そのため、`develop` 用の Runtime エントリを
-> `agentcore.json` に追加して（`cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` にも対応する
-> ARN を追加）そのテーブルを指すか、一時的に `AWS_MCP_Agent` の `ROLE_CONFIG_TABLE_NAME` を
-> `develop` のテーブルに向け替える必要があります。向き先がずれていると、画面から登録した
-> ロールがエージェント側の Role_Set 選択に出てきません。
+## 環境を増やす
+
+「`main` で本番を動かす → 改善したい → 検証環境が欲しい」という流れになったら、
+`develop` ブランチとそれ用の Runtime を追加します。
+
+1. Amplify Hosting に `develop` ブランチを接続してデプロイする
+2. `develop` のバックエンドが生成した RoleConfig テーブル名を確認する
+   （後述の [RoleConfig テーブルの見分け方](#roleconfig-テーブルの見分け方)）
+3. `agents/agentcore/agentcore.json` の `runtimes` に `AWS_MCP_Agent_Dev` を追加する
+   （`AWS_MCP_Agent` をコピーし、`name` と `ROLE_CONFIG_TABLE_NAME` を差し替える）
+4. `agents/agentcore/cdk/lib/cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` に
+   `AWS_MCP_Agent_Dev` のテーブル ARN を追加する
+5. `cd agents && agentcore deploy`
+6. `develop` ブランチの Amplify 環境変数 `AGENTCORE_RUNTIME_ARN` に、追加した Runtime の
+   ARN を設定して再デプロイする
+
+追加した Runtime は独立した Runtime ARN・実行ロール・IAM 権限（自分の
+`ROLE_CONFIG_TABLE_NAME` に対応するテーブルへの `dynamodb:Scan` のみ）を持つため、
+ステージング側の変更が本番用 Runtime に影響することはありません。IAM 権限を付与する CDK 側の
+ループは `AWS_MCP_Agent` というプレフィックスで対象を判定しているので、`AWS_MCP_Agent_Dev`
+という命名にしておけばコードの変更は不要です。
+
+注意点が 2 つあります。
+
+- **Memory は共有される**: AgentCore Memory（`AWS_MCP_AgentMemory`）はプロジェクト内の全
+  Runtime に自動でワイヤリングされるため、追加した Runtime とも共有されます。会話履歴を
+  環境ごとに分けたい場合は `agentcore.json` の `memories` に別の Memory を定義してください
+- **ロールの登録は環境ごとに必要**: RoleConfig テーブルは環境ごとに別実体なので、追加した
+  環境では管理者ユーザーの作成とロール登録をやり直す必要があります
+
+`npx ampx sandbox` 用の Runtime を足す場合も同じ手順です（`ROLE_CONFIG_TABLE_NAME` を
+sandbox が生成したテーブルに向ける）。
+
+> **コスト**: AgentCore Runtime は消費ベース課金（セッション中の CPU 消費とピークメモリ、
+> 秒単位）なので、呼ばれていない Runtime に待機コストは発生しません。Runtime を増やしたときに
+> 常時かかるのはコンテナイメージの ECR ストレージで、Runtime ごとに別リポジトリが作られます
+> （イメージ 1 つあたり約 170 MB）。
 
 ## ローカルでできること・できないこと
 
@@ -41,7 +73,8 @@ IAM 権限を持ちます。AgentCore Memory（`AWS_MCP_AgentMemory`）はプロ
 `npx ampx sandbox` は `copilotkitStreamingRelay` も含めてバックエンドをデプロイしますが、
 sandbox の Cognito ユーザープールは Amplify Hosting のものとは別実体です。sandbox で作った
 ユーザーで Hosting 環境にログインすることはできません。結合テストは Amplify Hosting の
-デプロイ環境（`develop` ブランチ推奨）で行ってください。
+デプロイ環境で行ってください。本番に影響を与えずに検証したい場合は、
+[環境を増やす](#環境を増やす)の手順で `develop` ブランチと専用 Runtime を用意します。
 
 ## 環境変数の設定場所
 
@@ -80,7 +113,7 @@ Amplify Gen 2 が生成する DynamoDB テーブル名は
 どのテーブルがどの環境のものかは、AWS コンソール → DynamoDB → 対象テーブル →「タグ」タブの
 `amplify:branch-name` タグで判別してください。
 
-対応関係が崩れやすいのは次の 3 箇所です。**同じ環境では 3 つがすべて同じテーブルを指す**
+対応関係が崩れやすいのは次の 3 箇所です。**1 つの環境では 3 つがすべて同じテーブルを指す**
 必要があります。
 
 1. `agents/agentcore/agentcore.json` の該当 Runtime の `ROLE_CONFIG_TABLE_NAME`

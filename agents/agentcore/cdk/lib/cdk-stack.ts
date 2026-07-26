@@ -110,20 +110,28 @@ const MCP_AGENT_ASSUMABLE_ROLE_ARNS = [
 
 /**
  * ARNs of the RoleConfig DynamoDB tables (Amplify Gen 2 Data_Model, see
- * role-set-switching spec) that each AWS_MCP_Agent runtime environment's
+ * role-set-switching spec) that each AWS_MCP_Agent* runtime environment's
  * execution role needs read-only access to, in order to load the flat
  * Role_Entry list used for Role_Set selection.
  *
- * Keyed by runtime name (see agentcore.json's `runtimes` array) rather than
- * a single shared constant, because this project intentionally runs two
- * separate Runtime deployments off the same agent code -- `AWS_MCP_Agent`
- * (sandbox / local development, points at the `npx ampx sandbox`-generated
- * table) and `AWS_MCP_Agent_Prod` (points at the Amplify Hosting `main`
- * branch's table) -- so that changes can be tested against the sandbox
- * table without affecting the Runtime the production Amplify Hosting app
- * actually calls. Each runtime's `ROLE_CONFIG_TABLE_NAME` env var (set in
- * agentcore.json) MUST match the table name embedded in its corresponding
- * ARN here.
+ * This template ships a SINGLE Runtime (`AWS_MCP_Agent`) pointing at the
+ * RoleConfig table of the environment you actually deploy. `agentcore deploy`
+ * has no per-runtime flag -- every entry in agentcore.json's `runtimes` array
+ * is deployed together as one CloudFormation stack -- so keeping one entry
+ * here keeps the "clone and deploy" path to a single Runtime, a single Runtime
+ * ARN and a single `<APPSYNC_API_ID>` placeholder to fill in.
+ *
+ * To add a second environment (e.g. an Amplify Hosting `develop` branch or a
+ * `npx ampx sandbox` backend), add an `AWS_MCP_Agent_Dev` entry to
+ * agentcore.json's `runtimes` array with that environment's
+ * `ROLE_CONFIG_TABLE_NAME`, add the matching table ARN to this map, and run
+ * `agentcore deploy` again. The map is keyed by runtime name (not a single
+ * shared constant) precisely so that each Runtime gets read access to its own
+ * table and nothing else. The `AWS_MCP_Agent` name prefix is what the loop
+ * below matches on, so `AWS_MCP_Agent_Dev` is picked up automatically.
+ *
+ * Each runtime's `ROLE_CONFIG_TABLE_NAME` env var (set in agentcore.json)
+ * MUST match the table name embedded in its corresponding ARN here.
  *
  * The actual table ARNs are only known after the corresponding Amplify
  * backend has been deployed (Amplify Gen 2 generates the DynamoDB table and
@@ -133,8 +141,7 @@ const MCP_AGENT_ASSUMABLE_ROLE_ARNS = [
  * corresponding entry here and redeploy this CDK stack (`agentcore deploy`).
  */
 const ROLE_CONFIG_TABLE_ARN_BY_RUNTIME: Record<string, string> = {
-  AWS_MCP_Agent: 'arn:aws:dynamodb:us-west-2:<YOUR_AWS_ACCOUNT_ID>:table/RoleConfig-<SANDBOX_APPSYNC_API_ID>-NONE',
-  AWS_MCP_Agent_Prod: 'arn:aws:dynamodb:us-west-2:<YOUR_AWS_ACCOUNT_ID>:table/RoleConfig-<PROD_APPSYNC_API_ID>-NONE',
+  AWS_MCP_Agent: 'arn:aws:dynamodb:us-west-2:<YOUR_AWS_ACCOUNT_ID>:table/RoleConfig-<APPSYNC_API_ID>-NONE',
 };
 
 /**
@@ -181,11 +188,12 @@ export class AgentCoreStack extends Stack {
     // permission to assume the pre-provisioned admin/read-only roles for
     // single-account role switching via mcp-proxy-for-aws Multi_Profile_Mode,
     // and read-only access to that runtime's corresponding RoleConfig
-    // DynamoDB table. Both `AWS_MCP_Agent` (sandbox) and `AWS_MCP_Agent_Prod`
-    // (Amplify Hosting `main`) need identical AssumeRole permissions (the
-    // target IAM roles are the same regardless of which RoleConfig table
-    // lists them), but each needs a *different* DynamoDB table ARN --
-    // see ROLE_CONFIG_TABLE_ARN_BY_RUNTIME for why.
+    // DynamoDB table. The loop matches on the `AWS_MCP_Agent` name prefix so
+    // that additional environments (e.g. an opt-in `AWS_MCP_Agent_Dev`) are
+    // picked up without touching this code: every such Runtime needs the same
+    // AssumeRole permissions (the target IAM roles are the same regardless of
+    // which RoleConfig table lists them), but each needs a *different*
+    // DynamoDB table ARN -- see ROLE_CONFIG_TABLE_ARN_BY_RUNTIME for why.
     for (const [runtimeName, mcpAgentEnv] of this.application.environments) {
       if (!runtimeName.startsWith('AWS_MCP_Agent')) {
         continue;

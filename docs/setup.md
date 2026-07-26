@@ -139,9 +139,9 @@ agents/
 分からない値」の2種類があります。次の順序で進めてください。
 
 1. `<YOUR_AWS_ACCOUNT_ID>` / `<YOUR_REGION>` を埋める（先に決まる）
-2. `npx ampx sandbox`（開発用）と Amplify Hosting の `main` ブランチ（本番用）を
-   デプロイし、生成された RoleConfig テーブル名を確認する
-3. `<SANDBOX_APPSYNC_API_ID>` / `<PROD_APPSYNC_API_ID>` を埋める
+2. Amplify バックエンドをデプロイし（Amplify Hosting のブランチ、または
+   `npx ampx sandbox`）、生成された RoleConfig テーブル名を確認する
+3. `<APPSYNC_API_ID>` を埋める
 4. `agentcore deploy` を実行する
 5. `agentcore status` で Runtime ARN と Memory ID を確認し、環境変数に設定する
 
@@ -151,10 +151,9 @@ agents/
 |---------------|---------------|--------------------|
 | `<YOUR_AWS_ACCOUNT_ID>` | `agents/agentcore/aws-targets.json`（`.example` からコピー）、`agents/agentcore/cdk/lib/cdk-stack.ts`（`MCP_AGENT_ASSUMABLE_ROLE_ARNS` / `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`）、`agents/app/AWS_MCP_Agent/.aws/config` | デプロイ先の AWS アカウント ID（12桁）。`aws sts get-caller-identity --query Account --output text` |
 | `<YOUR_REGION>` | `agents/agentcore/aws-targets.json` | デプロイ先リージョン（例: `us-west-2`）。`cdk-stack.ts` の DynamoDB ARN にもリージョンが直接書かれているため、`us-west-2` 以外を使う場合はそちらも合わせて変更する |
-| `<SANDBOX_APPSYNC_API_ID>` | `agents/agentcore/agentcore.json`（`AWS_MCP_Agent` の `ROLE_CONFIG_TABLE_NAME`）、`cdk-stack.ts`（`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME.AWS_MCP_Agent`） | `npx ampx sandbox` が生成した RoleConfig テーブル名 `RoleConfig-xxxxxxxx-NONE` の中央部分（AppSync API の ID）。AWS コンソール → DynamoDB → テーブル一覧で `RoleConfig-` から始まるテーブルを探し、`amplify:branch-name` タグで sandbox 用かを確認する |
-| `<PROD_APPSYNC_API_ID>` | `agents/agentcore/agentcore.json`（`AWS_MCP_Agent_Prod` の `ROLE_CONFIG_TABLE_NAME`）、`cdk-stack.ts`（`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME.AWS_MCP_Agent_Prod`） | 同上。Amplify Hosting の `main` ブランチのバックエンドが生成した RoleConfig テーブルの AppSync API ID |
-| （AgentCore Memory ID） | 環境変数 `AGENTCORE_MEMORY_ID`（ローカルは `.env.local`、本番は Amplify コンソールの環境変数） | `agentcore status` の Memory リソースに表示される ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）。ソースコードに書く値ではない |
-| （AgentCore Runtime ARN） | 環境変数 `AGENTCORE_RUNTIME_ARN`（同上） | `agentcore status` の Runtime ARN。ローカルは `AWS_MCP_Agent`、本番は `AWS_MCP_Agent_Prod` を使う |
+| `<APPSYNC_API_ID>` | `agents/agentcore/agentcore.json`（`AWS_MCP_Agent` の `ROLE_CONFIG_TABLE_NAME`）、`cdk-stack.ts`（`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME.AWS_MCP_Agent`） | デプロイした Amplify バックエンドが生成した RoleConfig テーブル名 `RoleConfig-xxxxxxxx-NONE` の中央部分（AppSync API の ID）。AWS コンソール → DynamoDB → テーブル一覧で `RoleConfig-` から始まるテーブルを探し、`amplify:branch-name` タグで目的の環境のものかを確認する |
+| （AgentCore Memory ID） | 環境変数 `AGENTCORE_MEMORY_ID`（ローカルは `.env.local`、Amplify Hosting はコンソールの環境変数） | `agentcore status` の Memory リソースに表示される ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）。ソースコードに書く値ではない |
+| （AgentCore Runtime ARN） | 環境変数 `AGENTCORE_RUNTIME_ARN`（同上） | `agentcore status` に表示される `AWS_MCP_Agent` の Runtime ARN |
 
 > **`agentcore.json` と `cdk-stack.ts` の整合性**: 各 Runtime の
 > `ROLE_CONFIG_TABLE_NAME`（`agentcore.json`）と、`cdk-stack.ts` の
@@ -167,10 +166,10 @@ agents/
 > IAM ポリシー例に出てくる `<ACCOUNT_ID>` は説明用のマスクです。書き換えが必要な
 > 実ファイルは上記の表に挙げたものだけです。
 
-sandbox のみで試す場合は、`AWS_MCP_Agent_Prod` の Runtime と
-`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` の該当エントリを削除すれば
-`<PROD_APPSYNC_API_ID>` を埋める必要はありません（詳細は
-[README のデプロイ手順](../README.md#開発用--本番用-runtime-の分離について) を参照）。
+初期状態の Runtime は `AWS_MCP_Agent` の 1 つだけなので、埋めるテーブル ID も 1 つです。
+ステージング環境などを追加して Runtime を増やす場合は、環境ごとに
+`agentcore.json` のエントリと `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` の ARN が増えます（手順は
+[README の環境を増やす場合の Runtime 追加について](../README.md#環境を増やす場合の-runtime-追加について) を参照）。
 
 ## Kiro + Agent Toolkit for AWS
 

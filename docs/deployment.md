@@ -34,7 +34,7 @@ Amplify Hosting（フロントエンド + Cognito）と AgentCore Runtime（エ�
 ┌─────────────────────────────────────────────────────────────┐
 │ AgentCore Runtime                                           │
 │                                                             │
-│  AWS_MCP_Agent / AWS_MCP_Agent_Prod (AG-UI プロトコル)         │
+│  AWS_MCP_Agent (AG-UI プロトコル)                             │
 │    └─ Strands Agent + ag-ui-strands                         │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -67,8 +67,8 @@ Amplify Hosting（フロントエンド + Cognito）と AgentCore Runtime（エ�
 
 | ブランチ | 環境 | 対応する AgentCore Runtime |
 |---------|------|---------------------------|
-| `main` | 本番 | `AWS_MCP_Agent_Prod` |
-| `develop` | ステージング（任意） | 既定では未割り当て（[environments.md](environments.md#環境の一覧) を参照） |
+| `main` | 本番 | `AWS_MCP_Agent`（初期状態で定義されている唯一の Runtime） |
+| `develop` | ステージング（任意） | Runtime を追加する（[environments.md](environments.md#環境を増やす) を参照） |
 
 各環境が指す Cognito ユーザープール・RoleConfig テーブル・Runtime の対応関係は
 [environments.md](environments.md) にまとめています。
@@ -93,11 +93,11 @@ Push → GitHub Actions（lint / 型チェック）→ Amplify Hosting（ビル�
   ```
 - AWS 認証情報が設定済み
 - Docker が起動している（Container ビルドのため）
-- **プレースホルダ（`<YOUR_AWS_ACCOUNT_ID>` / `<SANDBOX_APPSYNC_API_ID>` /
-  `<PROD_APPSYNC_API_ID>` / `<YOUR_REGION>`）を自分の環境の値に置き換え済み**
+- **プレースホルダ（`<YOUR_AWS_ACCOUNT_ID>` / `<YOUR_REGION>` / `<APPSYNC_API_ID>`）を
+  自分の環境の値に置き換え済み**
   — 埋める値と取得方法は
   [setup.md のプレースホルダと ID の埋め方](setup.md#プレースホルダと-id-の埋め方エージェント機能を使う場合)
-  を参照。`<SANDBOX_APPSYNC_API_ID>` / `<PROD_APPSYNC_API_ID>` は RoleConfig テーブル名の
+  を参照。`<APPSYNC_API_ID>` は RoleConfig テーブル名の
   一部で、**手順 1（Amplify のデプロイ）を先に済ませないと値が分かりません**。
   未置換のまま `agentcore deploy` すると、存在しない ARN を参照した IAM ポリシーが作られ、
   実行時に `AccessDenied` になります
@@ -166,7 +166,7 @@ Amplify コンソール → アプリ → ホスティング → 環境変数:
 
 | キー | 値 | 説明 |
 |------|-----|------|
-| `AGENTCORE_RUNTIME_ARN` | 手順 2-2 で取得した ARN（本番は `AWS_MCP_Agent_Prod`） | `copilotkitStreamingRelay` Lambda の環境変数、および IAM ポリシーの `Resource` の両方に使われる（`NEXT_PUBLIC_` プレフィックスは不要。サーバーサイド専用） |
+| `AGENTCORE_RUNTIME_ARN` | 手順 2-2 で取得した `AWS_MCP_Agent` の ARN | `copilotkitStreamingRelay` Lambda の環境変数、および IAM ポリシーの `Resource` の両方に使われる（`NEXT_PUBLIC_` プレフィックスは不要。サーバーサイド専用） |
 | `AGENTCORE_MEMORY_ID` | `agentcore status` に表示される Memory ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`） | 会話履歴の読み出し（`bedrock-agentcore:ListEvents`）の呼び出しと IAM ポリシーの `Resource` に使われる。未設定だとポリシー自体が付与されず、過去セッションの履歴復元が 500 になる |
 | `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | `copilotkitStreamingRelay` の関数 URL | デプロイ後、`amplify_outputs.json` の `custom.copilotkitRelayUrl` で確認できる。`CopilotProvider.tsx` の `runtimeUrl` が参照する |
 | `ROLE_CONFIG_TABLE_NAME` | RoleConfig テーブル名（例: `RoleConfig-xxxxxxxx-NONE`） | `GET /api/roles` が DynamoDB を `Scan` する対象。`agents/agentcore/agentcore.json` の同名の値と同じテーブルを指すこと |
