@@ -263,35 +263,45 @@ agentcore deploy
 初回は CDK の bootstrap を含むため数分かかります。デプロイ後、`agentcore status` で
 Runtime ARN を確認してください。
 
-#### 開発用 / 本番用 Runtime の分離について
+取得した Runtime ARN は `AGENTCORE_RUNTIME_ARN`（`copilotkitStreamingRelay` の環境変数、
+`NEXT_PUBLIC_` プレフィックスなし）に設定します。ローカルで sandbox を使う場合は
+`.env.local` に記載するかシェルで `export` した状態で `npx ampx sandbox` を実行してください
+（詳細は [新しい Lambda 関数（`copilotkitStreamingRelay`）について](#新しい-lambda-関数copilotkitstreamingrelayについて) を参照）。
 
-このリポジトリの `agents/agentcore/agentcore.json` の `runtimes` 配列には、同じ
-エージェントコード（`app/AWS_MCP_Agent/`）を指す2つの Runtime エントリが定義されています。
+#### 環境を増やす場合の Runtime 追加について
 
-| Runtime 名 | 用途 | `ROLE_CONFIG_TABLE_NAME` の向き先 |
-|-----------|------|-----------------------------------|
-| `AWS_MCP_Agent` | 開発用（`npx ampx sandbox` との組み合わせ） | sandbox が生成する RoleConfig テーブル |
-| `AWS_MCP_Agent_Prod` | 本番用（Amplify Hosting の `main` ブランチと組み合わせ） | `main` ブランチの Amplify バックエンドが生成する RoleConfig テーブル |
+初期状態の `agents/agentcore/agentcore.json` には Runtime が **1 つ**（`AWS_MCP_Agent`）だけ
+定義されています。`agentcore deploy` には Runtime を選んでデプロイするオプションがなく、
+`runtimes` 配列の全エントリが同じ CloudFormation スタックにまとめてデプロイされるため、
+エントリ数がそのまま作られる Runtime の数になります。まずは 1 つで動かし、環境を分ける
+必要が出てから増やす構成にしています。
 
-`agentcore deploy` を実行すると、この2つの Runtime が**同時に**（同じ AWS アカウント・
-リージョンの同じ CloudFormation スタック内に）デプロイされます。それぞれ独立した
-AgentCore Runtime ARN・実行ロール・IAM 権限（`ROLE_CONFIG_TABLE_NAME` に対応する
-DynamoDB テーブルへの `dynamodb:Scan` のみ）を持つため、開発用の変更が本番用 Runtime に
-影響することはありません。AgentCore Memory（`AWS_MCP_AgentMemory`）は両方の Runtime で
-共有されます（プロジェクト内の全 Runtime に自動的にワイヤリングされる仕組みのため）。
+ステージング環境を追加する典型的な流れは次のとおりです。
 
-Amplify Hosting（本番）は `AWS_MCP_Agent_Prod` の Runtime ARN を、ローカル開発
-（sandbox + `npm run dev`）は `AWS_MCP_Agent` の Runtime ARN を、それぞれ
-`AGENTCORE_RUNTIME_ARN`（`copilotkitStreamingRelay` の環境変数、`NEXT_PUBLIC_` プレフィックス
-なし）に設定してください（`agentcore status` の出力でどちらがどちらか確認できます）。
-ローカル sandbox 実行時は `.env.local` またはシェルの環境変数として設定し、
-`npx ampx sandbox` を実行してください（詳細は
-[新しい Lambda 関数（`copilotkitStreamingRelay`）について](#新しい-lambda-関数copilotkitstreamingrelayについて) を参照）。
+1. Amplify Hosting に `develop` ブランチを接続してデプロイする
+2. `develop` のバックエンドが生成した RoleConfig テーブル名を確認する
+   （`amplify:branch-name` タグで判別）
+3. `agentcore.json` の `runtimes` に `AWS_MCP_Agent_Dev` エントリを追加する
+   （`AWS_MCP_Agent` をコピーし、`name` と `ROLE_CONFIG_TABLE_NAME` を差し替える）
+4. `agents/agentcore/cdk/lib/cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` に
+   対応するテーブル ARN を追加する
+5. `cd agents && agentcore deploy`
+6. `develop` ブランチの Amplify 環境変数 `AGENTCORE_RUNTIME_ARN` に、追加した Runtime の
+   ARN を設定する
 
-自分のプロジェクトでこの分離が不要な場合は、`agentcore.json` から
-`AWS_MCP_Agent_Prod` エントリと、`agents/agentcore/cdk/lib/cdk-stack.ts` の
-`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` の対応するエントリを削除し、`ROLE_CONFIG_TABLE_NAME`
-を1つの値に統一してください。
+追加した Runtime は独立した Runtime ARN・実行ロール・IAM 権限（自分の
+`ROLE_CONFIG_TABLE_NAME` に対応するテーブルへの `dynamodb:Scan` のみ）を持つため、
+ステージング側の変更が本番用 Runtime に影響することはありません。IAM 権限を付与する
+CDK 側のループは `AWS_MCP_Agent` というプレフィックスで対象を判定しているので、
+`AWS_MCP_Agent_Dev` という命名にしておけばコードの変更は不要です。
+
+AgentCore Memory（`AWS_MCP_AgentMemory`）はプロジェクト内の全 Runtime に自動でワイヤリング
+される仕組みのため、**追加した Runtime とも共有されます**。会話履歴を環境ごとに分けたい
+場合は、`agentcore.json` の `memories` に別の Memory を定義する必要があります。
+
+> **コスト**: AgentCore Runtime は消費ベース課金（セッション中に消費した CPU とピークメモリ、
+> 秒単位）なので、呼ばれていない Runtime の待機コストは発生しません。Runtime を増やしたときに
+> 常時かかるのはコンテナイメージの ECR ストレージ（Runtime ごとに別リポジトリ）です。
 
 ### 3. Amplify Hosting をデプロイし、接続する
 
@@ -307,7 +317,7 @@ Amplify Hosting（本番）は `AWS_MCP_Agent_Prod` の Runtime ARN を、ロー
 
    | キー | 値 |
    |------|-----|
-   | `AGENTCORE_RUNTIME_ARN` | 手順2で取得した Runtime ARN（`AWS_MCP_Agent_Prod` を使う）。バックエンドビルド（`pipeline-deploy`）時に `copilotkitStreamingRelay` の環境変数・IAM ポリシーの `Resource` に反映される |
+   | `AGENTCORE_RUNTIME_ARN` | 手順2で取得した Runtime ARN。バックエンドビルド（`pipeline-deploy`）時に `copilotkitStreamingRelay` の環境変数・IAM ポリシーの `Resource` に反映される |
    | `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | `copilotkitStreamingRelay` の関数 URL（手順3のデプロイ後に確認、後述） |
    | `ROLE_CONFIG_TABLE_NAME` | RoleConfig テーブル名（後述） |
 
@@ -513,8 +523,8 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
   加えて、Memory を読み出す前に `ChatSession.ownerUserId`（DynamoDB、`grantReadData` で付与された
   読み取り権限で取得）と認証済みユーザーの `actor_id` を照合し、不一致の場合は `ListEvents` 自体を
   発行せず 403 を返します。
-- **長期記憶（Semantic）の有効化・保持期間 365 日**: `AWS_MCP_Agent` と `AWS_MCP_Agent_Prod` の
-  両 Runtime が共有する Memory リソース（`agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）に対して、
+- **長期記憶（Semantic）の有効化・保持期間 365 日**: プロジェクト内の全 Runtime が共有する
+  Memory リソース（`agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）に対して、
   長期記憶戦略（`semantic_facts`、SEMANTIC、名前空間
   `/strategy/{memoryStrategyId}/actor/{actorId}/`）を有効化し、`actor_id` 単位でセッションを
   またいだ記憶抽出を可能にしました。あわせて短期記憶の保持期間（`eventExpiryDuration`）を

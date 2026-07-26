@@ -21,30 +21,7 @@
       "envVars": [
         {
           "name": "ROLE_CONFIG_TABLE_NAME",
-          "value": "RoleConfig-<SANDBOX_APPSYNC_API_ID>-NONE"
-        },
-        {
-          "name": "ROLE_CONFIG_CACHE_TTL_SECONDS",
-          "value": "30"
-        }
-      ],
-      "requestHeaderAllowlist": [
-        "X-Role-Names",
-        "X-Amzn-Bedrock-AgentCore-Runtime-Custom-UserId"
-      ]
-    },
-    {
-      "name": "AWS_MCP_Agent_Prod",
-      "build": "Container",
-      "entrypoint": "main.py",
-      "codeLocation": "app/AWS_MCP_Agent/",
-      "runtimeVersion": "PYTHON_3_13",
-      "networkMode": "PUBLIC",
-      "protocol": "AGUI",
-      "envVars": [
-        {
-          "name": "ROLE_CONFIG_TABLE_NAME",
-          "value": "RoleConfig-<PROD_APPSYNC_API_ID>-NONE"
+          "value": "RoleConfig-<APPSYNC_API_ID>-NONE"
         },
         {
           "name": "ROLE_CONFIG_CACHE_TTL_SECONDS",
