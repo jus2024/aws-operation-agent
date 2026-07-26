@@ -1,0 +1,177 @@
+/* ベーススタイル */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   Design_Tokens — 単一ソース（Req 7.1）
+   色・余白・タイポグラフィ・角丸・影・レイアウトの共有トークンを
+   ここ（globals.css の :root）に一元定義する。globals.css は
+   src/app/layout.tsx で 1 度だけ import されるアプリ唯一のグローバル
+   スタイルであり、チャット画面・セッション履歴サイドバー・
+   Feedback_Dashboard を含む全 UI がこのトークン集合を共有する。
+
+   注意:
+   - トークンの「定義」はここ（Task 8.1）。各コンポーネントへの
+     一貫「適用」（フォールバック除去等）は Task 8.2 で行う。
+   - 値はリニューアル後のビジュアル方向性（mocks/chat.html,
+     mocks/dashboard.html の :root）と整合させている。
+   - 通常テキストは対背景 4.5:1 以上、大テキスト/境界は 3:1 以上を
+     満たすよう配色を選定している（Req 7.2 の品質基準を先取り）。
+   ============================================================ */
+:root {
+  /* --- 色: テキスト --- */
+  --color-text: #1a1a2e;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+
+  /* --- 色: 背景・サーフェス --- */
+  --color-bg: #f4f6f9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+  --color-surface-muted: #f3f4f6;
+
+  /* --- 色: 境界 --- */
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  /* --- 色: プライマリ --- */
+  --color-primary: #0073bb;
+  --color-primary-hover: #005a94;
+  --color-primary-subtle: #eff6ff;
+
+  /* --- 色: Good（肯定的フィードバック） --- */
+  --color-good: #15803d;
+  --color-good-surface: #dcfce7;
+  --color-good-surface-hover: #bbf7d0;
+
+  /* --- 色: Bad（否定的フィードバック） --- */
+  --color-bad: #b91c1c;
+  --color-bad-surface: #fee2e2;
+  --color-bad-surface-hover: #fecaca;
+  --color-bad-soft: #fbeae7;
+
+  /* --- 色: フォーカスリング（Req 7.3） --- */
+  --color-focus: #2563eb;
+
+  /* --- タイポグラフィ --- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI",
+    "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono",
+    monospace;
+
+  /* --- 余白（4px ベースのスケール） --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* --- 角丸 --- */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* --- 影 --- */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 6px 20px rgba(16, 24, 40, 0.08);
+
+  /* --- レイアウト --- */
+  --max-width: 1120px;
+  --sidebar-width: 288px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* テキスト */
+    --color-text: #e8ecf5;
+    --color-text-secondary: #aeb7c7;
+    --color-text-muted: #8b95a7;
+
+    /* 背景・サーフェス */
+    --color-bg: #0f141f;
+    --color-surface: #171d2b;
+    --color-surface-alt: #1d2432;
+    --color-surface-muted: #1d2432;
+
+    /* 境界 */
+    --color-border: #2c3444;
+    --color-border-strong: #3a4457;
+
+    /* プライマリ */
+    --color-primary: #4da6e0;
+    --color-primary-hover: #7abfea;
+    --color-primary-subtle: #17293a;
+
+    /* Good */
+    --color-good: #46c485;
+    --color-good-surface: #143026;
+    --color-good-surface-hover: #1b4433;
+
+    /* Bad */
+    --color-bad: #f0776a;
+    --color-bad-surface: #33201d;
+    --color-bad-surface-hover: #452723;
+    --color-bad-soft: #33201d;
+
+    /* フォーカスリング */
+    --color-focus: #7abfea;
+
+    /* 影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   可視フォーカスインジケーター（Req 7.3） — Task 8.2
+
+   共有トークン --color-focus を用いて、チャット・サイドバー・
+   Feedback_Dashboard を含む全 UI のキーボードフォーカスに一貫した
+   フォーカスリングを提供する。個別コンポーネント CSS
+   （image-attachment-composer.css）の :focus-visible と同一指定で揃える。
+   （メッセージ操作行の Good/Bad・再生成・コピーは CopilotKit ビルトイン
+   コントロールに一本化したため、専用 CSS は持たない。）
+
+   インライン style の多い各コントロール（page.tsx / SessionHistorySidebar /
+   SessionChat / FeedbackDashboard 等）は :focus-visible を表現できないため、
+   ここで単一ソースとして定義し一貫適用する。
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+}

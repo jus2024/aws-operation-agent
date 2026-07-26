@@ -1,0 +1,32 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - nvm use 20
+        - npm ci --cache .npm --prefer-offline
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+frontend:
+  phases:
+    build:
+      commands:
+        - nvm use 20
+        # Amplify Hosting は Next.js のサーバーサイド（Route Handler など）に
+        # コンソールで設定した環境変数をデフォルトで渡さない（ビルド時の
+        # シークレット漏洩防止のための仕様）。ROLE_CONFIG_TABLE_NAME は
+        # サーバーサイドの GET /api/roles（route.ts）でのみ使う環境変数のため、
+        # ビルド前に .env.production へ明示的に書き出す必要がある。
+        # 参考: https://docs.aws.amazon.com/amplify/latest/userguide/ssr-environment-variables.html
+        # ROLE_CONFIG_TABLE_NAME が未設定でもビルド自体は失敗させない
+        # （grep が一致しない場合の終了コード 1 を吸収する）
+        - env | grep -e ROLE_CONFIG_TABLE_NAME >> .env.production || true
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .next/cache/**/*
+      - .npm/**/*
+      - node_modules/**/*

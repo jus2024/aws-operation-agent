@@ -1,0 +1,250 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 `node_modules/@copilotkit/runtime`（または該当パッケージ）のエクスポートを直接確認する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628191
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459638510
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459880079
+      }
+    ],
+    "2.1 `amplify/functions/copilotkitStreamingRelay/resource.ts` を新規作成する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628229
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459890918
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784460574590
+      }
+    ],
+    "2.2 `amplify/functions/copilotkitStreamingRelay/handler.ts` の骨格を作成する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628256
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784460579951
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784461907715
+      }
+    ],
+    "3.1 `amplify/functions/copilotkitStreamingRelay/handler.ts` にロジックを移植する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628284
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784461913544
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784463467155
+      }
+    ],
+    "4.1 `amplify/backend.ts` を更新する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628310
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784463528869
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784464139384
+      }
+    ],
+    "5.1 `AmplifySSRComputeRole` から `InvokeAgentRuntime` 権限（`InvokeAgentCoreRuntime` インラインポリシー）を削除する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628339
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784470563547
+      }
+    ],
+    "6.1 sandbox 環境で新しい Lambda 関数 URL への直接リクエストによる動作確認を行う": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628365
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784464648664
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784469428466
+      }
+    ],
+    "7.1 `src/lib/agent/CopilotProvider.tsx` の `runtimeUrl` を新しい関数 URL に変更する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628391
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784469437635
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784469696406
+      }
+    ],
+    "7.2 `src/app/api/copilotkit/route.ts` を削除する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628417
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784469923991
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784470101842
+      }
+    ],
+    "8.1 タスク 2.1 で `Resource: '*'` としていた IAM ポリシーを、実際の AgentCore Runtime ARN に絞る": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628449
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784470574755
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784471235313
+      }
+    ],
+    "9.1 README に新しい Lambda 関数・関数 URL・デプロイフローへの影響を追記する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459628497
+      },
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784471245206
+      },
+      {
+        "executionId": "e76b17ee-18d0-4fe0-8321-c0c0ce5c3f42",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784472217729
+      }
+    ],
+    "1. 調査: `@copilotkit/runtime` の低レベル呼び出し方法を確定する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784459880109
+      }
+    ],
+    "2. Amplify カスタム関数: `copilotkitStreamingRelay` の骨格を作成する（高感度: IAM）": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784461907749
+      }
+    ],
+    "3. `route.ts` の中継ロジックを新しい Lambda ハンドラーに移植する（高感度: 認証経路）": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784463467196
+      }
+    ],
+    "4. `amplify/backend.ts` に新しい関数を配線する": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784464139415
+      }
+    ],
+    "6. sandbox 環境でのストリーミング動作確認": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784469428517
+      }
+    ],
+    "7. フロントエンドの向け先変更と旧 Route Handler の削除（高感度: 破壊的切り替え）": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784470101945
+      }
+    ],
+    "5. IAM 権限の移動（高感度）": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784470563590
+      }
+    ],
+    "8. Runtime ARN を絞った IAM 権限への変更（残タスク）": [
+      {
+        "executionId": "5ad06300-f423-4c29-b76e-c93756d87a60",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784471235340
+      }
+    ],
+    "9. README・ドキュメント更新": [
+      {
+        "executionId": "e76b17ee-18d0-4fe0-8321-c0c0ce5c3f42",
+        "chatSessionId": "sess_d86bff83-5091-4db5-9f62-ab1e6e33bfa9",
+        "timestamp": 1784472217787
+      }
+    ]
+  }
+}

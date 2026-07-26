@@ -1,0 +1,931 @@
+{
+  "pbtResults": {
+    "4.3 操作スコープのデフォルト解決プロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918338204
+    },
+    "4.5 セッションターゲットによるツール制限のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918366641
+    },
+    "1.5 カタログ認可決定のプロパティテスト（sandbox/統合）": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918672262
+    },
+    "8.2 バリデーション + 送信ゲートのプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918739224
+    },
+    "1.7 参照整合性のプロパティテスト（sandbox/統合）": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918873087
+    },
+    "1.6 スコープ永続化ラウンドトリップのプロパティテスト（sandbox/統合）": {
+      "status": "passed",
+      "lastRunTimestamp": 1781918888856
+    },
+    "4.7 操作スコープ強制のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781919010702
+    },
+    "8.6 チャットアクセスゲートのプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781919034540
+    },
+    "4.11 エラー分類のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781919045073
+    },
+    "8.7 管理者向け UI ゲートのプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781919157589
+    },
+    "8.8 セッション-接続束縛不変性のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781919854827
+    },
+    "4.9 スコープ拒否メッセージのプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781920087604
+    },
+    "7.3 ヘッダー伝播のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781921078972
+    },
+    "7.4 接続解決・入力検証のプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781921079443
+    },
+    "7.5 認証ゲートのプロパティテスト": {
+      "status": "passed",
+      "lastRunTimestamp": 1781921131386
+    }
+  },
+  "executionHistory": {
+    "1.1 Connection / ChatSession データモデルを定義し認可モードを userPool に変更": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677269
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915691282
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916219595
+      }
+    ],
+    "1.2 defineAuth に ADMINS グループを追加": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677314
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915692131
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916220772
+      }
+    ],
+    "1.3 backend.ts を defineBackend の戻り値ベースに更新": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677350
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915693020
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916216780
+      }
+    ],
+    "1.4 Cognito セルフサインアップ無効化の CFN override を追加": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677379
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918264560
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918502322
+      }
+    ],
+    "1.5 カタログ認可決定のプロパティテスト（sandbox/統合）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677409
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918513484
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918770780
+      }
+    ],
+    "1.6 スコープ永続化ラウンドトリップのプロパティテスト（sandbox/統合）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677450
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918791927
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918907246
+      }
+    ],
+    "1.7 参照整合性のプロパティテスト（sandbox/統合）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677475
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918792843
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918907945
+      }
+    ],
+    "1.8 ChatSession owner 認可の統合テスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677500
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918793865
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918908999
+      }
+    ],
+    "2.1 Connection 削除前の参照チェックロジックを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677529
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918265474
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918500219
+      }
+    ],
+    "2.2 参照チェックロジックのユニットテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677560
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918915481
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919066721
+      }
+    ],
+    "3. Checkpoint - バックエンド型チェック": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677589
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921350914
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921825512
+      }
+    ],
+    "4.1 agentcore.json の runtimeVersion を修正": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677617
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915693863
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916218328
+      }
+    ],
+    "4.2 セッションコンテキスト抽出モジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677647
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915694997
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916217502
+      }
+    ],
+    "4.3 操作スコープのデフォルト解決プロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677676
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918266475
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918503653
+      }
+    ],
+    "4.4 ターゲット絞り込みモジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677721
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916232669
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918256807
+      }
+    ],
+    "4.5 セッションターゲットによるツール制限のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677749
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918267458
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918501264
+      }
+    ],
+    "4.6 操作スコープ強制モジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677776
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918268518
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918499534
+      }
+    ],
+    "4.7 操作スコープ強制のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677813
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918916122
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919063226
+      }
+    ],
+    "4.8 スコープ拒否メッセージ生成を実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677837
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919079039
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919771294
+      }
+    ],
+    "4.9 スコープ拒否メッセージのプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677861
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920002795
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920687659
+      }
+    ],
+    "4.10 Gateway / MCP エラー分類モジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677883
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918509565
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918771756
+      }
+    ],
+    "4.11 エラー分類のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677912
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918916980
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919065621
+      }
+    ],
+    "5.1 Gateway MCP クライアントモジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677949
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919079980
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919769349
+      }
+    ],
+    "5.2 システムプロンプトモジュールを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915677977
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919080724
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919772355
+      }
+    ],
+    "5.3 main.py をエージェント組み立てに更新": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678002
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920001071
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920690743
+      }
+    ],
+    "5.4 接続失敗・ツールエラー報告のユニットテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678030
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921004844
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921329801
+      }
+    ],
+    "5.5 agentcore.json に Gateway マルチターゲット構成を追加（設定タスク）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678059
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918917913
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919064579
+      }
+    ],
+    "6. Checkpoint - エージェントスモーク確認": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678088
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921832566
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921981145
+      }
+    ],
+    "7.1 リクエスト解析・入力検証・接続解決の純粋ロジックを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678117
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919081706
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919768505
+      }
+    ],
+    "7.2 認証ゲート（401）を route.ts に組み込む": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678144
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920001995
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920688488
+      }
+    ],
+    "7.3 ヘッダー伝播のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678171
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921006000
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921327345
+      }
+    ],
+    "7.4 接続解決・入力検証のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678413
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921006635
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921328005
+      }
+    ],
+    "7.5 認証ゲートのプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678436
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921007575
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921328875
+      }
+    ],
+    "8.1 接続バリデーション純粋関数を実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678460
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916233286
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918257602
+      }
+    ],
+    "8.2 バリデーション + 送信ゲートのプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678494
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918510284
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918774444
+      }
+    ],
+    "8.3 Cognito グループ判定フックを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678524
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781916234387
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918258748
+      }
+    ],
+    "8.4 カタログ読み取り / CRUD フックを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678553
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918511484
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918772653
+      }
+    ],
+    "8.5 チャットアクセスゲート / 管理 UI ゲート / セッション束縛の純粋判定を実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678581
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918512294
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918775662
+      }
+    ],
+    "8.6 チャットアクセスゲートのプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678606
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918920245
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919062397
+      }
+    ],
+    "8.7 管理者向け UI ゲートのプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678634
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919082798
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919770264
+      }
+    ],
+    "8.8 セッション-接続束縛不変性のプロパティテスト": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678663
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919783723
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919992963
+      }
+    ],
+    "9.1 ConnectionList コンポーネントを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678691
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919784407
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919994654
+      }
+    ],
+    "9.2 ConnectionForm と ConnectionCatalogManager（管理者専用）を実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678720
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920003636
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920689523
+      }
+    ],
+    "9.3 ProfileSelector コンポーネントを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678756
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919785312
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919993545
+      }
+    ],
+    "9.4 SessionHeader と SessionChat コンポーネントを実装": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678782
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920004773
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920691871
+      }
+    ],
+    "9.5 CopilotProvider を connectionId/scope 送信に拡張": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678808
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920703828
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920998751
+      }
+    ],
+    "9.6 page.tsx をチャット主画面に置き換え、ナビからサンプルリンク除外": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678841
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921008460
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921330991
+      }
+    ],
+    "10. Checkpoint - フロントエンド lint / 型チェック": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781915678872
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921994078
+      },
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781922237188
+      }
+    ],
+    "1. Amplify バックエンド: データモデルと認証の拡張": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781918909030
+      }
+    ],
+    "2. Amplify バックエンド: 参照整合性ロジック（アプリ層）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919066747
+      }
+    ],
+    "8. フロントエンド: 純粋ロジックとフック": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781919993012
+      }
+    ],
+    "4. エージェント: 純粋ロジックモジュール（Python 3.13）": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781920687711
+      }
+    ],
+    "7. API Route: 接続解決とコンテキスト伝播": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921328923
+      }
+    ],
+    "5. エージェント: Gateway 接続・プロンプト・結線": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921329851
+      }
+    ],
+    "9. フロントエンド: コンポーネントと主画面結線": [
+      {
+        "executionId": "a9bbddf5-57f7-4842-a4d7-eef35d447457",
+        "chatSessionId": "sess_594b72ee-bcb0-4a98-84cf-3e0f168ce103",
+        "timestamp": 1781921331039
+      }
+    ]
+  }
+}

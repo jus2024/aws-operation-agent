@@ -1,0 +1,281 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 `amplify/functions/copilotkitStreamingRelay/resource.ts` に Memory 読み取り権限を追加する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441683
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513453764
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513841567
+      }
+    ],
+    "2.1 型定義と `filterConversationalEvents` を実装する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441714
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513847229
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514041061
+      }
+    ],
+    "2.2 `parseConversationalEventPayload` を実装する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441751
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514045589
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514346916
+      }
+    ],
+    "2.3 `convertMemoryEventsToAGUIMessages` を実装する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441789
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514375634
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514779012
+      }
+    ],
+    "2.4 変換パイプラインの冪等性を検証するテストを追加する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441820
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514783196
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514935748
+      }
+    ],
+    "3.1 Memory 読み出しエンドポイントのルーティング分岐を実装する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441852
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514941198
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784515938340
+      }
+    ],
+    "3.2 actor_id 不一致時の認可ブロックを実装する（高感度: 認証経路）": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441882
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784515946767
+      },
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784517593171
+      }
+    ],
+    "4.1 `npx ampx sandbox` でデプロイし、実データでの疎通確認を行う": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441914
+      },
+      {
+        "executionId": "e251e17c-d2b1-4f68-867d-69aee84e0dca",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784520629361
+      },
+      {
+        "executionId": "e251e17c-d2b1-4f68-867d-69aee84e0dca",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784521614539
+      }
+    ],
+    "5.1 `src/lib/agent/useSessionMemoryRestore.ts` を新規作成する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441946
+      },
+      {
+        "executionId": "2e7676a5-168c-4108-83dc-967eaf49716b",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784522573790
+      }
+    ],
+    "6.1 `page.tsx` の `SessionChatWithPersistence` を Memory 読み出し API 呼び出しに切り替える": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513441975
+      },
+      {
+        "executionId": "1a59ef45-0d0d-4981-b07d-c0d3e3662b96",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784525293129
+      },
+      {
+        "executionId": "1a59ef45-0d0d-4981-b07d-c0d3e3662b96",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784525573478
+      }
+    ],
+    "6.2 セッション名自動生成ロジックの新しい検知方式を確定・実装する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442046
+      },
+      {
+        "executionId": "1a59ef45-0d0d-4981-b07d-c0d3e3662b96",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784525578812
+      },
+      {
+        "executionId": "1a59ef45-0d0d-4981-b07d-c0d3e3662b96",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784526145037
+      }
+    ],
+    "7.1 `src/lib/agent/useChatSessionPersistence.ts` の `onNewMessage` 購読部分を削除する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442107
+      },
+      {
+        "executionId": "204feac1-7b0d-446c-aba4-7142f30984f2",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784526402269
+      }
+    ],
+    "7.2 `src/lib/agent/chatMessagePersistence.ts` の `buildChatMessageCreateInput` を削除する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442134
+      },
+      {
+        "executionId": "196ff431-174c-4727-935e-3b1e82b3edf4",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784529939828
+      }
+    ],
+    "8.1 実ブラウザでのセッション復元・ツールカード再現を確認する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442159
+      }
+    ],
+    "9.1 `agents_AWS_MCP_AgentMemory-XXXXXXXXXX` に Long_Term_Memory_Strategy を設定する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442185
+      }
+    ],
+    "10.1 `agents_AWS_MCP_AgentMemory-XXXXXXXXXX` の `eventExpiryDuration` を365日に変更する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442219
+      }
+    ],
+    "11.1 `amplify/data/resource.ts` の `ChatMessage` モデル定義・DynamoDB テーブルの削除タイミングを判断する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442251
+      }
+    ],
+    "12.1 README に AgentCore Memory ベースの会話履歴復元への変更点を追記する": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513442286
+      }
+    ],
+    "1. IAM 権限追加: `bedrock-agentcore:ListEvents`（高感度）": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784513841603
+      }
+    ],
+    "2. `memoryRestore.ts`（新規モジュール）の実装": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784514935781
+      }
+    ],
+    "3. `handler.ts` へのルーティング分岐追加": [
+      {
+        "executionId": "2f9f7c08-8b58-4eda-bf7b-196913753f62",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784517593214
+      }
+    ],
+    "4. sandbox 環境での Memory 読み出しエンドポイントの疎通確認": [
+      {
+        "executionId": "e251e17c-d2b1-4f68-867d-69aee84e0dca",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784521614598
+      }
+    ],
+    "6. フロントエンド: `page.tsx` の変更とセッション名自動生成ロジックの分離": [
+      {
+        "executionId": "1a59ef45-0d0d-4981-b07d-c0d3e3662b96",
+        "chatSessionId": "sess_94271e46-b39b-432f-a39e-e6d3937134d8",
+        "timestamp": 1784526145071
+      }
+    ]
+  }
+}

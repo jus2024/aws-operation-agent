@@ -1,0 +1,511 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 `amplify/data/resource.ts` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401445
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242416813
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246478887
+      }
+    ],
+    "2.1 `agents/app/AWS_MCP_Agent/context/session_context.py` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401477
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242417699
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246482694
+      }
+    ],
+    "2.2 `agents/app/AWS_MCP_Agent/context/test_session_context.py` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401516
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246818231
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247267158
+      }
+    ],
+    "3.1 `agents/app/AWS_MCP_Agent/profile/proxy_profiles.py` を新規作成する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401543
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242418721
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246479753
+      }
+    ],
+    "4.1 `agents/app/AWS_MCP_Agent/gateway/client.py` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401576
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242419732
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246484064
+      }
+    ],
+    "5.1 `agents/app/AWS_MCP_Agent/profile/injection.py` を新規作成する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401600
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246819145
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247269006
+      }
+    ],
+    "6.1 `agents/app/AWS_MCP_Agent/prompts/system.py` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401627
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242420074
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246481626
+      }
+    ],
+    "7.1 `agents/app/AWS_MCP_Agent/main.py` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401658
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247527258
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249060497
+      }
+    ],
+    "8. Checkpoint - エージェントスモーク確認": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401702
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249079566
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251067626
+      }
+    ],
+    "9.1 `src/lib/agent/connectionResolver.ts` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401732
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246504452
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246788147
+      }
+    ],
+    "9.3 `src/app/api/copilotkit/route.ts` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401759
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246820153
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247267980
+      }
+    ],
+    "10.1 `src/lib/agent/copilotProperties.ts` を新規作成する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401803
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246505477
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246788981
+      }
+    ],
+    "10.3 `src/lib/agent/CopilotProvider.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401834
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246821180
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247270798
+      }
+    ],
+    "11.1 `src/lib/agent/connectionValidation.ts` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401863
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246506445
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246789944
+      }
+    ],
+    "12.1 `src/lib/agent/connectionSelectability.ts` を新規作成する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401892
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246507477
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246791055
+      }
+    ],
+    "13.1 `src/lib/agent/useSessionRestore.ts` を新規作成する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401919
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246507836
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246792277
+      }
+    ],
+    "14. Checkpoint - フロントエンド純粋関数の lint / 型チェック": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401951
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249080424
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251066661
+      }
+    ],
+    "15.1 `src/components/agent/ConnectionForm.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242401984
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246821747
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247269990
+      }
+    ],
+    "15.2 `src/components/agent/ConnectionCatalogManager.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402009
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247533428
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249061306
+      }
+    ],
+    "15.3 `src/components/agent/ConnectionList.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402043
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247278093
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247376747
+      }
+    ],
+    "15.4 `src/components/agent/ProfileSelector.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402085
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247534545
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249061915
+      }
+    ],
+    "15.5 `src/lib/agent/useConnectionAdmin.ts` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402116
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247278237
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247376317
+      }
+    ],
+    "16.1 `src/app/page.tsx` を更新する": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402142
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249081012
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251067771
+      }
+    ],
+    "17. Final Checkpoint - 全体統合の lint / 型チェック / スモーク確認": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784242402177
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251079303
+      },
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251450022
+      }
+    ],
+    "1. Amplify データモデル全面改定（高感度・破壊的スキーマ変更 F4）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246478936
+      }
+    ],
+    "3. エージェント: プロファイル一覧重複排除の純粋関数（Property 1）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246479791
+      }
+    ],
+    "6. エージェント: システムプロンプトの引数変更": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246481657
+      }
+    ],
+    "4. エージェント: mcp-proxy-for-aws 接続への移行（高感度 F1/F2）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246484110
+      }
+    ],
+    "11. フロントエンド: 接続フォーム入力検証の移行（Property 9）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246789978
+      }
+    ],
+    "12. フロントエンド: 既存 Connection の選択可否ゲート（Property 11、新規）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246791094
+      }
+    ],
+    "13. フロントエンド: セッション復元リゾルバ（Property 8、新規）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784246792312
+      }
+    ],
+    "2. エージェント: セッションコンテキストのヘッダー変更（高感度 F3）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247267199
+      }
+    ],
+    "9. フロントエンド: 接続解決・ヘッダー構築の移行（高感度 F3）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247268014
+      }
+    ],
+    "5. エージェント: BeforeToolCallEvent フック新規実装 + スコープ独立性検証（高感度 F5）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247269041
+      }
+    ],
+    "10. フロントエンド: CopilotKit properties 構築の純粋関数化（Property 3）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784247270846
+      }
+    ],
+    "7. エージェント: main.py 自前 FastAPI ルート化 + 結線（高感度 F3）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249060555
+      }
+    ],
+    "15. フロントエンド: コンポーネントのフィールド参照更新": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784249061967
+      }
+    ],
+    "16. フロントエンド: ページ統合（セッション復元 UI 結線）": [
+      {
+        "executionId": "d0d550d5-4e44-4907-a82f-7d1c77b74b29",
+        "chatSessionId": "sess_64280345-1fd5-4cef-9b43-f4dac439f280",
+        "timestamp": 1784251067832
+      }
+    ]
+  }
+}

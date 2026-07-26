@@ -1,0 +1,244 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 `amplify/data/resource.ts` に ChatSession フィールド追加と ChatMessage モデルを新設する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149756948
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149776057
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149856337
+      }
+    ],
+    "2.1 `src/lib/agent/sessionNameResolver.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149756987
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149861825
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150000108
+      }
+    ],
+    "2.3 `src/lib/agent/sessionSort.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757018
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149862532
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150001024
+      }
+    ],
+    "2.5 `src/lib/agent/relativeTime.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757061
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149863497
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150001955
+      }
+    ],
+    "2.7 `src/lib/agent/chatMessagePersistence.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757098
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149864557
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150002860
+      }
+    ],
+    "3. Checkpoint - 純粋関数とPBTの検証": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757133
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150028205
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150101748
+      }
+    ],
+    "4.1 `src/lib/agent/useChatSessions.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757164
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150112055
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150263479
+      }
+    ],
+    "4.2 `src/lib/agent/useChatSessionPersistence.ts` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757246
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150269497
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150710771
+      }
+    ],
+    "5. Checkpoint - フック実装の検証": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757271
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150716912
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150778929
+      }
+    ],
+    "6.1 `src/components/agent/SessionHistorySidebar.tsx` を新規作成する": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757300
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150784481
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150952242
+      }
+    ],
+    "7.1 `src/app/page.tsx` を拡張してサイドバー + チャットの左右分割レイアウトにする": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757325
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150958335
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784151220062
+      }
+    ],
+    "8. Final checkpoint - 全体統合の検証": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149757361
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784151225769
+      },
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784151338460
+      }
+    ],
+    "1. データモデル拡張": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784149856390
+      }
+    ],
+    "2. 純粋関数モジュール実装": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150002895
+      }
+    ],
+    "4. フック実装": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150710816
+      }
+    ],
+    "6. UI コンポーネント実装": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784150952281
+      }
+    ],
+    "7. ページ統合": [
+      {
+        "executionId": "3dc41a6f-2a3c-4db3-87ee-e23be35d59e4",
+        "chatSessionId": "sess_7147df3b-bc76-4113-9a1f-5827937ddaab",
+        "timestamp": 1784151220120
+      }
+    ]
+  }
+}

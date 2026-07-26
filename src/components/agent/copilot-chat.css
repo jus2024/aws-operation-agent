@@ -1,0 +1,387 @@
+/**
+ * CopilotChat カスタムスタイル
+ *
+ * CopilotKit のデフォルトスタイルを拡張し、mocks/chat.html の主画面
+ * （中央寄せの会話カラム・メッセージアバター/著者/バブル・角丸コンポーザ）に
+ * 近づける。セレクタは @copilotkit/react-ui の実 DOM クラス
+ * （dist/index.css で確認: .copilotKitMessages / .copilotKitMessagesContainer /
+ *  .copilotKitInputContainer / .copilotKitInput / .copilotKitAssistantMessage /
+ *  .copilotKitMessageControls）を対象にしている。
+ *
+ * 色・余白・角丸・影は src/app/globals.css の共有 Design_Tokens
+ * （var(--color-*), --radius, --shadow-*, --space-*）を用い、他 UI と一貫させる
+ * （Req 7.1）。ダークモードはトークン側の上書きにより自動追従する。
+ */
+
+/* チャットコンテナ: 親の高さいっぱいに表示 */
+.session-chat {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* テーマカスタマイズ: CopilotKit のテーマ変数を共有 Design_Tokens に対応付けて
+   チャット表面（背景・境界・プライマリ・テキスト）を他 UI と一貫させる（Req 7.1）。 */
+.session-chat {
+  --copilot-kit-primary-color: var(--color-primary);
+  --copilot-kit-contrast-color: #ffffff;
+  --copilot-kit-background-color: var(--color-bg);
+  --copilot-kit-secondary-color: var(--color-surface-alt);
+  --copilot-kit-secondary-contrast-color: var(--color-text);
+  --copilot-kit-separator-color: var(--color-border);
+  --copilot-kit-muted-color: var(--color-text-muted);
+  --copilot-kit-input-background-color: var(--color-surface);
+  background-color: var(--color-bg);
+}
+
+/* CopilotKit ルート: 背景をアプリ背景トークンに合わせる */
+.session-chat.copilotKitChat,
+.session-chat .copilotKitChat {
+  background-color: var(--color-bg);
+}
+
+/* メッセージエリア（スクロール領域）の背景をアプリ背景に統一 */
+.session-chat .copilotKitMessages {
+  background-color: var(--color-bg);
+}
+
+/* 会話本文を中央の 1 カラム（最大 820px）に制約する（mock .chat__inner）。 */
+.session-chat .copilotKitMessagesContainer {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+/* 入力エリア（コンポーザ）も同じ中央 1 カラム幅に揃える（mock .composer__inner）。 */
+.session-chat .copilotKitInputContainer {
+  background: var(--color-bg);
+  padding-bottom: var(--space-5);
+}
+
+.session-chat .copilotKitInput {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+/* ============================================================
+   メッセージ行スキャフォールド（mocks/chat.html .msg ／ アバター ／ メタ ／ バブル）
+   - アシスタント: FeedbackAssistantMessage が .msg.msg--assistant を描画し、
+     内側に CopilotKit 既定の .copilotKitAssistantMessage（操作行を含む）を包む。
+   - ユーザー: ChatUserMessage が .msg.msg--user を描画する。
+   ============================================================ */
+.session-chat .msg {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* メッセージ間の余白（連続する行の間） */
+.session-chat .copilotKitMessagesContainer > * + * {
+  margin-top: var(--space-5);
+}
+
+.session-chat .msg__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  /* インライン SVG グリフを中央寄せする（旧テキストアバターの grid から flex へ）。 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* アバター内の SVG グリフ。currentColor で描画されるため色はアバター側の
+   `color` が駆動する。枠に対して内接させ、円の縁でクリップされないようにする。 */
+.session-chat .msg__avatar-icon {
+  width: 60%;
+  height: 60%;
+}
+
+/* ユーザー: 役割別カラーコーディングのためニュートラルグレー背景 + 白アイコン。 */
+.session-chat .msg__avatar--user {
+  background-color: var(--color-text-secondary);
+  color: #ffffff;
+}
+
+/* アシスタント: ブランドカラー（ブランドマークと同系のグラデーション）+ 白アイコン。 */
+.session-chat .msg__avatar--assistant {
+  background: linear-gradient(135deg, var(--color-primary), #00a0dc);
+  color: #ffffff;
+}
+
+.session-chat .msg__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-chat .msg__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.session-chat .msg__author {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.session-chat .msg__time {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+/* バブル（ユーザー発話。ChatUserMessage が描画） */
+.session-chat .bubble {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  box-shadow: var(--shadow-sm);
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text);
+}
+
+.session-chat .msg--user .bubble {
+  background-color: var(--color-primary-subtle);
+  border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+/* アシスタント本文を .msg__body 内で左寄せのバブル調に整える。
+   CopilotKit 既定の操作行（.copilotKitMessageControls）は
+   .copilotKitAssistantMessage 内に絶対配置されるため、下側に余白を確保して
+   再生成・コピー・thumbs の視認性を保つ（Option A のコントロールを維持）。 */
+.session-chat .msg--assistant .copilotKitAssistantMessage {
+  max-width: 100%;
+  margin: 0;
+  padding: 0.85rem 1rem 2.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+/* 既定操作行はバブル下端の確保領域に配置する */
+.session-chat .msg--assistant .copilotKitAssistantMessage .copilotKitMessageControls {
+  left: 1rem;
+  bottom: 0.5rem;
+}
+
+/* ============================================================
+   Markdown リストのインデント復元（バブル内マーカーのクリップ修正）
+
+   globals.css のグローバルリセット（*,*::before,*::after { padding: 0 }）が
+   ol/ul の既定左パディングを剥がすため、CopilotKit の Markdown レンダラが
+   出力する ol/ul のマーカー（「1.」「2.」や箇条書きの●）がバブル左端で
+   見切れる。
+
+   【根本原因】CopilotKit の Markdown レンダラ（react-markdown の
+   defaultComponents）は a / code / h1–h6 / p / pre / blockquote / ul / li に
+   だけカスタムレンダラを持ち、`ol` 用のレンダラを持たない。そのため実行時の
+   順序付きリストは react-markdown 既定の素の `<ol>`（クラスなし）として描画され、
+   `.copilotKitMarkdownElement` クラスが一切付与されない。旧ルールが対象にしていた
+   `ol.copilotKitMarkdownElement` は実 DOM に存在せずマッチしなかった、というのが
+   「効かなかった」理由。加えて CopilotKit 既定 CSS は `ul.copilotKitMarkdownElement`
+   にのみ padding-left:20px を与え、`li` は padding-left:0 / list-style-position:
+   outside のため、番号マーカーがコンテンツボックスの外（左）へ出てバブル左端で
+   見切れていた。
+
+   【対処】クラス名（copilotKitMarkdownElement）へ依存せず、`.session-chat` 配下の
+   素の要素セレクタ（ol / ul / li）でインデントを与える。これによりクラスを持たない
+   `<ol>` にも確実にマッチする。セッション履歴サイドバー（SessionHistorySidebar）は
+   `<CopilotChat className="session-chat">` の兄弟要素として描画され `.session-chat`
+   の配下には入らないため、サイドバーの role="listbox" 等のリストには影響しない。
+
+   特異度: `.session-chat ol/ul` は (0,1,1)。CopilotKit の
+   `ul.copilotKitMarkdownElement` も (0,1,1) だが、本 CSS は
+   `@copilotkit/react-ui/styles.css` の後に import されるため後勝ちで適用される
+   （ol 側にはそもそも競合する padding ルールが存在しない）。マーカーは
+   list-style-position: outside でも十分な padding-left によりバブルの
+   パディング内へ収まる。 */
+.session-chat ol,
+.session-chat ul {
+  padding-left: 1.75rem;
+  margin: 0.5rem 0;
+  list-style-position: outside;
+}
+
+.session-chat li {
+  margin: 0.15rem 0;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   ユーザーメッセージの添付画像サムネイル（ChatUserMessage）
+
+   画像添付ターンでは content が「構造化マルチモーダル配列」または
+   「content ブロック列の Python repr（生 base64 を含む文字列）」として届く。
+   parseUserMessageContent がテキストと画像（base64）へ分解し、バブルには
+   本文のみを表示、画像は以下のサムネイルとして描画する（生 base64 は表示しない）。
+
+   スタイルは共有 Design_Tokens（--radius / --color-border / --space-*）を用い、
+   mock の `.thumb`（角丸・境界・小さめのブロック）に倣う。 */
+.session-chat .msg--user .user-image-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* サムネイルを包む透明ボタン（クリックで別タブ拡大表示）。
+   ボタン自身は装飾を持たず、内側の <img> のサイズに追従する。 */
+.session-chat .msg--user .user-image-thumb-button {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+  border-radius: var(--radius);
+}
+
+.session-chat .msg--user .user-image-thumb-button:focus-visible {
+  outline: 2px solid var(--color-focus, var(--color-primary));
+  outline-offset: 2px;
+}
+
+/* サムネイル画像: 縦横比を保持（flex 親による縦引き伸ばしを防ぐ）。
+   align-items: flex-start（親）+ width/height: auto + object-fit: contain で
+   元画像のアスペクト比のまま最大 200px の枠に収める。 */
+.session-chat .msg--user .user-image-thumb {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: contain;
+  cursor: pointer;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   日付区切り行（.chat-day-divider）
+
+   暦日が変わる境界で、連続するメッセージの「その日の最初のメッセージ」の直前に
+   挿入する控えめな日付ラベル（例: 2026年7月21日（火））。ChatUserMessage /
+   FeedbackAssistantMessage が isFirstOfDay かつ時刻ありのときのみ描画する。
+
+   スタイルは共有 Design_Tokens（--color-border / --color-surface-alt /
+   --color-text-secondary / --radius-pill / --space-*）を用い、他 UI と一貫させる。
+   中央のラベルを両側の細い罫線で挟むフレックスレイアウト（mock の day-divider 調）。 */
+.session-chat .chat-day-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+  color: var(--color-text-secondary);
+}
+
+.session-chat .chat-day-divider::before,
+.session-chat .chat-day-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.session-chat .chat-day-divider span {
+  flex-shrink: 0;
+  padding: 0.2rem 0.75rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   浮遊日付ヘッダー（.chat-sticky-date / ChatStickyDateHeader）
+
+   スクロール領域（.copilotKitMessages）の最上部へ絶対配置で重ね、いま最上部に
+   見えている暦日の日付をピン留めして表示する（LINE / iOS メッセージ風）。日付境界へ
+   スクロールすると、次の暦日の inline 区切り行（.chat-day-divider）が上端へ入るのに
+   合わせてラベルが入れ替わり、内側は translateY で上へ押し出される（push 演出）。
+
+   注意: このヘッダーは <CopilotChat className="session-chat"> の兄弟要素として
+   描画されるため `.session-chat` の配下に入らない。したがって inline 区切り行の
+   `.session-chat .chat-day-divider` ルールは適用されず、ここで自前に装飾する
+   （見た目は共有 Design_Tokens で inline 区切りと一致させる）。
+
+   - pointer-events: none でスクロール/入力を妨げない。
+   - overflow: hidden で push（内側の translateY）を上端でクリップする。
+   - data-visible="false" のときは opacity 0 で隠す（会話先頭・dated メッセージ 0 件）。
+   ============================================================ */
+.chat-sticky-date {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  /* 下のメッセージが透けないよう最上部を塗り、下方向へフェードさせる控えめな背景。 */
+  background: linear-gradient(
+    to bottom,
+    var(--color-bg) 55%,
+    color-mix(in srgb, var(--color-bg) 60%, transparent) 85%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.chat-sticky-date[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 内側の区切り行: 中央ピル + 両側の細罫線。会話本文の中央 1 カラム（最大 820px・
+   左右 padding var(--space-5)）に合わせ、inline 区切り行と水平位置を揃える。 */
+.chat-sticky-date__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-5);
+  color: var(--color-text-secondary);
+}
+
+.chat-sticky-date__inner::before,
+.chat-sticky-date__inner::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.chat-sticky-date__inner span {
+  flex-shrink: 0;
+  padding: 0.2rem 0.75rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
