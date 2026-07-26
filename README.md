@@ -651,7 +651,7 @@ npx ampx sandbox delete
 | 対象 | 品質ゲート（GitHub Actions） | デプロイ |
 |------|------------------------------|---------|
 | Web アプリ | `.github/workflows/ci.yml` — lint（ESLint）、型チェック（`tsc --noEmit`） | Amplify Hosting（Git push で自動） |
-| エージェント | なし（CI 未設定）。ローカルで `ruff check .` と `pytest` を実行する | AgentCore CLI（`agentcore deploy`、手動） |
+| エージェント | なし（CI 未設定）。ローカルで `pytest` と `ruff` を実行する | AgentCore CLI（`agentcore deploy`、手動） |
 
 `ci.yml` は `agents/**` / `docs/**` / `.kiro/**` / `*.md` を `paths-ignore` しているため、
 エージェントコードのみの変更では CI が起動しません。エージェント側の検証は
@@ -659,10 +659,17 @@ npx ampx sandbox delete
 
 ```bash
 cd agents/app/AWS_MCP_Agent
-source .venv/bin/activate
-pytest              # 単体テスト（pyproject.toml の dev 依存グループに含まれる）
-uvx ruff check .    # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
+uv sync --group dev --python 3.13
+uv run pytest                      # 単体テスト（dev 依存グループに含まれる）
+uvx ruff check --select F .         # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
 ```
+
+> **ruff の設定について**: このリポジトリには ruff の設定ファイルを置いていません。
+> `uvx ruff check .`（ルール無指定）は ruff のバージョンによって選択されるルールセットが
+> 変わり、既存コードに対してスタイル系の指摘（`UP` / `RUF` / `TRY` / `E501` など）が
+> 数十件出ます。いずれも動作に影響しないため未対応です。回帰の検出には未定義名・未使用
+> import を見る `--select F` を使ってください。ルールセットを固定したい場合は
+> `pyproject.toml` に `[tool.ruff]` を追加してください。
 
 ## サンプルの除去
 
