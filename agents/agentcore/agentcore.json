@@ -6,7 +6,7 @@
   "tags": {
     "agentcore:created-by": "agentcore-cli",
     "agentcore:project-name": "agents",
-    "Project": "agent-for-aws-mcp-server",
+    "Project": "aws-operation-agent",
     "Environment": "default"
   },
   "runtimes": [

@@ -549,7 +549,7 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
 Amplify バックエンド（`amplify/backend.ts`）と AgentCore CDK スタック
 （`agents/agentcore/agentcore.json` の `tags`）の両方に `Project` / `Environment`
 タグを設定しています。コスト配分レポート（AWS Billing → コスト配分タグ）で
-`Project=agent-for-aws-mcp-server` で絞り込むと、このアプリに関連する
+`Project=aws-operation-agent` で絞り込むと、このアプリに関連する
 AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime 等）の
 コストをまとめて確認できます。
 
@@ -565,8 +565,11 @@ AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime
   （`aws-targets.json`）で分けて運用する場合は、それぞれの `agentcore.json` で
   値を変更してください。
 
-自分のプロジェクトとして使う場合は、両方の `Project` の値を実際のプロジェクト名に
-変更してください。
+自分のプロジェクトとして使う場合は、両方の `Project` の値（`amplify/backend.ts` の
+`backendTags.add('Project', ...)` と `agents/agentcore/agentcore.json` の `tags.Project`）を
+実際のプロジェクト名に変更してください。**2箇所は必ず同じ値に揃えてください**（片方だけ
+変えるとコスト配分レポートが2つに分断されます）。値を変更した場合は、次回の
+`npx ampx pipeline-deploy` / `agentcore deploy` でタグが差し替わります。
 
 ## セキュリティに関する注意事項
 

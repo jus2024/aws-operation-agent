@@ -156,5 +156,5 @@ chatSessionTable.grantReadData(backend.copilotkitStreamingRelay.resources.lambda
 //   テーブル名末尾を固定文字列 "NONE" にする（ブランチ名は反映されない）。
 //   ブランチの識別は上記の `amplify:branch-name` タグで行う。
 const backendTags = Tags.of(backend.stack);
-backendTags.add('Project', 'agent-for-aws-mcp-server');
+backendTags.add('Project', 'aws-operation-agent');
 backendTags.add('Environment', process.env.AWS_BRANCH ?? 'sandbox');
