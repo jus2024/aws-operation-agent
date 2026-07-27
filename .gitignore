@@ -64,3 +64,8 @@ notes/
 # Legacy (Starter Toolkit)
 agents/.bedrock_agentcore.yaml
 agents/.bedrock_agentcore/
+
+# AgentCore direct code deployment（CodeZip）のビルド出力
+# scripts/build-agent-package.sh が生成する。arm64 向けに展開した依存を含むため
+# サイズが大きく、コミット対象にしない。
+agents/app/AWS_MCP_Agent/.build/

@@ -1,6 +1,8 @@
 import { Tags } from 'aws-cdk-lib';
 import { defineBackend } from '@aws-amplify/backend';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import type { Function as LambdaFunction, FunctionUrl } from 'aws-cdk-lib/aws-lambda';
+import { createAgentCoreResources } from './agent/resource.js';
 import { auth } from './auth/resource.js';
 import { data } from './data/resource.js';
 import { copilotkitStreamingRelay } from './functions/copilotkitStreamingRelay/resource.js';
@@ -142,6 +144,73 @@ chatSessionTable.grantReadData(backend.copilotkitStreamingRelay.resources.lambda
   "COGNITO_USER_POOL_CLIENT_ID",
   backend.auth.resources.userPoolClient.userPoolClientId
 );
+
+// ---------------------------------------------------------------------------
+// AgentCore Runtime / Memory の統合（PoC、AGENT_ENABLED=true のときのみ）
+// ---------------------------------------------------------------------------
+//
+// 既定は無効。`AGENT_ENABLED` を立てていない環境（新規クローン直後の sandbox、
+// エージェント機能を使わないプロジェクト）では下記のブロックが一切実行されず、
+// 生成される CloudFormation テンプレートは従来と同一になる。
+//
+// 有効にすると、AgentCore Runtime / Memory がこのバックエンドスタックの一部として
+// デプロイされ、次の手動設定が不要になる:
+// - `agents/agentcore/agentcore.json` の `ROLE_CONFIG_TABLE_NAME`
+//   （`<APPSYNC_API_ID>` プレースホルダ）
+// - `agents/agentcore/cdk/lib/cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`
+//   と `MCP_AGENT_ASSUMABLE_ROLE_ARNS`（`<YOUR_AWS_ACCOUNT_ID>` プレースホルダ）
+// - 環境変数 `AGENTCORE_RUNTIME_ARN` / `AGENTCORE_MEMORY_ID` の手動設定
+//
+// 事前に `./scripts/build-agent-package.sh` を実行して、Linux arm64 向けに依存を
+// 展開したビルド出力を作っておく必要がある（未実行なら resource.ts が synth 時に
+// 分かりやすいエラーで止まる）。
+//
+// 注意: 有効にすると Amplify アプリの削除時に AgentCore Memory も削除される
+// （= 会話履歴が消える）。本番運用するなら CfnMemory に RemovalPolicy.RETAIN を
+// 付ける必要がある（PoC のため未対応）。
+if (process.env.AGENT_ENABLED === 'true') {
+  const agent = createAgentCoreResources(backend.stack, {
+    roleConfigTable: backend.data.resources.tables['RoleConfig'],
+  });
+
+  const relayLambda = backend.copilotkitStreamingRelay.resources.lambda as LambdaFunction;
+
+  // `resource.ts` は synth 時のシェル環境変数から ARN / Memory ID を読み、値が
+  // 空ならポリシー自体を付与しないフェイルセーフ方針になっている。統合モードでは
+  // 値が CDK のトークン（デプロイ時に解決）になるため process.env には現れない。
+  // そこで環境変数と IAM ポリシーの両方をここで上書き・追加する。
+  // `addEnvironment` は同名キーを上書きするため、`resource.ts` が設定した空文字列は
+  // トークンに置き換わる。
+  relayLambda.addEnvironment('AGENTCORE_RUNTIME_ARN', agent.runtimeArn);
+  relayLambda.addEnvironment('AGENTCORE_MEMORY_ID', agent.memoryId);
+
+  // 高感度（IAM）: 中継 Lambda から Runtime を呼ぶ権限と、会話履歴を読む権限。
+  // `resource.ts` 側は環境変数が空のためポリシーを付与していないので、ここが
+  // 唯一の付与箇所になる（重複しない）。Resource は実際に作成した Runtime /
+  // Memory に限定される。
+  relayLambda.addToRolePolicy(
+    new PolicyStatement({
+      actions: ['bedrock-agentcore:InvokeAgentRuntime'],
+      resources: [agent.runtimeArn, `${agent.runtimeArn}/*`],
+    })
+  );
+  relayLambda.addToRolePolicy(
+    new PolicyStatement({
+      actions: ['bedrock-agentcore:ListEvents'],
+      resources: [agent.memoryArn, `${agent.memoryArn}/*`],
+    })
+  );
+
+  // フロントエンドが値を確認できるように custom output にも出す（Runtime ARN は
+  // 秘密ではなく識別子）。従来は `agentcore status` で調べて Amplify コンソールの
+  // 環境変数に貼っていた値。
+  backend.addOutput({
+    custom: {
+      agentCoreRuntimeArn: agent.runtimeArn,
+      agentCoreMemoryId: agent.memoryId,
+    },
+  });
+}
 
 // コスト確認用タグ（CDK の Tags.of によりスタック配下の全リソースに伝播する）
 // - Project: プロジェクト識別用。自分のプロジェクトに合わせて値を変更してよい
