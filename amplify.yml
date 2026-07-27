@@ -1,6 +1,30 @@
 version: 1
 backend:
   phases:
+    preBuild:
+      commands:
+        # エージェント機能（AgentCore Runtime / Memory）を Amplify のバックエンド
+        # スタックに含めるかは AGENT_ENABLED で切り替える。Amplify コンソールの
+        # 環境変数に AGENT_ENABLED=true を設定したブランチでのみ、AgentCore の
+        # リソースがデプロイされる。
+        #
+        # 有効な場合は、CDK synth の前にエージェントの配布用パッケージ
+        # （Linux arm64 向けに依存を展開したディレクトリ）を作る必要がある。
+        # `s3_assets.Asset` はディレクトリを zip するだけで依存解決はしないため。
+        #
+        # uv を使う理由（scripts/build-agent-package.sh の冒頭コメントに詳細）:
+        # このビルドイメージ（AL2023）の /usr/bin/python3 は 3.9 で、pip の
+        # --python-version は requires-python の判定に使われないため、
+        # Python 3.12 以上を要求する依存の解決に失敗する。uv は本来のクロス解決を
+        # 行い、単一バイナリで Python を必要としない。
+        - |
+          if [ "$AGENT_ENABLED" = "true" ]; then
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            export PATH="$HOME/.local/bin:$PATH"
+            ./scripts/build-agent-package.sh
+          else
+            echo "AGENT_ENABLED が true ではないため、エージェントのパッケージビルドをスキップします"
+          fi
     build:
       commands:
         - nvm use 20
