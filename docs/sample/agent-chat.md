@@ -146,7 +146,7 @@ CopilotKit が AG-UI イベントのパース、メッセージ状態管理、�
 - ローカルの `npm run dev` 単体には該当ロールがない（`npx ampx sandbox` でこの Lambda 自体はデプロイされるが、
   フロントエンドとの結合確認には sandbox 環境の関数 URL への接続が必要）
 
-エージェント単体のテストは `uvicorn` または `agentcore dev` でローカル実行可能です。
+エージェント単体のテストは `uv run uvicorn` でローカル実行可能です。
 
 ## カスタマイズ
 

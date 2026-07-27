@@ -17,7 +17,7 @@ fileMatchPattern: ".github/workflows/**/*"
 > 検証は `agents/app/AWS_MCP_Agent/` でのローカル実行（`pytest` / `uvx ruff check .`）で行う。
 > 以下はテンプレートを別プロジェクトで再利用する場合の指針。
 
-`agents/` ディレクトリが追加された場合（`agentcore create` で生成後）、エージェント用の CI ワークフローを追加する:
+`agents/` にエージェントコードがある場合、エージェント用の CI ワークフローを追加する:
 
 - ファイル: `.github/workflows/ci-agents.yml`
 - トリガー: `agents/**` のパス変更時

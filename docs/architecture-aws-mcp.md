@@ -96,32 +96,34 @@
 
 ## デプロイ手順
 
-### AgentCore Runtime
+AgentCore Runtime / Memory は Amplify バックエンドスタックの一部
+（`amplify/agent/resource.ts`）なので、デプロイは 1 系統です。
 
 ```bash
-cd agents
-agentcore deploy
+# 配布用パッケージのビルド（ローカルからデプロイする場合のみ）
+./scripts/build-agent-package.sh
+
+git push origin <ブランチ名>
 ```
 
-- コンテナビルド + ECR push + CloudFormation 更新が一括実行される
-- `agentcore deploy` が自動設定する `AGENTCORE_GATEWAY_*` 環境変数は現在使用していない
-- 新しい依存を追加したら先に `uv lock` を実行すること
-
-```bash
-# 依存追加の流れ
-cd agents/app/AWS_MCP_Agent
-uv add <package-name>
-uv lock
-cd ../../..
-agentcore deploy
-```
-
-### Amplify Hosting
-
-- Git push で自動デプロイ（フロントエンド + `amplify/backend.ts`、`copilotkitStreamingRelay` を含む）
-- コンピューティングロール（AmplifySSRComputeRole）は手動作成・Amplify Console で紐付け（`/api/roles` の `dynamodb:Scan` 用）
-- `copilotkitStreamingRelay` 専用の実行ロールは CDK が自動作成するため手動設定は不要
+- Git push で自動デプロイ（フロントエンド + `amplify/backend.ts` の全リソース。
+  `AGENT_ENABLED=true` のブランチでは AgentCore Runtime / Memory も含む）
+- Amplify Hosting のビルドでは `amplify.yml` の `preBuild` が配布用パッケージを作る
+- 配布方式は direct code deployment（CodeZip）。コンテナビルドと ECR は不要
+- コンピューティングロール（`AmplifySSRComputeRole`）は Amplify が作成し、`dynamodb:Scan` を
+  手動で付与する（`/api/roles` 用）
+- `copilotkitStreamingRelay` と Runtime の実行ロールは CDK が自動作成するため手動設定は不要
 - 環境変数の変更後は再ビルドが必要
+
+新しい依存を追加したら、先に `uv.lock` を更新してください。配布用パッケージは
+このロックファイルから作られます。
+
+```bash
+cd agents/app/AWS_MCP_Agent
+uv add <package-name>       # uv.lock も更新される
+cd ../../..
+./scripts/build-agent-package.sh
+```
 
 ---
 
@@ -155,11 +157,12 @@ agent = Agent(model=load_model(), tools=[mcp_client])
 - API Route で両方をフォールバック参照する実装にした
 - 複数リクエストを1ターンで送るため、2回目以降は `forwardedProps` が含まれない場合がある → `_sessionHeaders` を維持する設計
 
-### agentcore deploy と環境変数
+### Runtime の環境変数は CDK が唯一の源泉
 
-- `update-agent-runtime` で環境変数を追加すると、既存の変数が上書きされる（マージではない）
-- `agentcore deploy` を実行すると環境変数がリセットされる（CDK が管理する値のみに戻る）
-- **対策**: エージェントコード内で `AGENTCORE_GATEWAY_*` 環境変数（deploy が自動設定）を優先的に参照する
+- `update-agent-runtime` で環境変数を追加すると、既存の変数が上書きされる（マージではない）。
+  そのためコンソールや CLI で直接足した値は、次のデプロイで失われる
+- 現在は `amplify/agent/resource.ts` の `environmentVariables` が唯一の定義箇所なので、
+  この問題は起きない。Runtime に値を渡したい場合はここに追加する
 
 ### Runtime 起動時の MCP 接続
 

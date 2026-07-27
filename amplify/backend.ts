@@ -45,9 +45,18 @@ const copilotkitRelayFunctionUrl = backend.copilotkitStreamingRelay.resources.la
   'FunctionUrl'
 ) as FunctionUrl;
 
+// RoleConfig テーブル名も custom output に出す。
+//
+// この値は `GET /api/roles`（Next.js の Route Handler）がサーバーサイドで
+// DynamoDB を Scan する対象で、SSR の環境変数として渡す必要があるため CDK からは
+// 自動配線できない（Amplify Hosting ではコンソールの環境変数 →
+// amplify.yml が .env.production に書き出す、という経路になる）。
+// ただし「テーブル名を知る」ところまでは自動化できるので、AWS コンソールで
+// DynamoDB のテーブル一覧から `RoleConfig-` を探す手間をなくす。
 backend.addOutput({
   custom: {
     copilotkitRelayUrl: copilotkitRelayFunctionUrl.url,
+    roleConfigTableName: backend.data.resources.tables['RoleConfig'].tableName,
   },
 });
 
@@ -155,9 +164,9 @@ chatSessionTable.grantReadData(backend.copilotkitStreamingRelay.resources.lambda
 //
 // 有効にすると、AgentCore Runtime / Memory がこのバックエンドスタックの一部として
 // デプロイされ、次の手動設定が不要になる:
-// - `agents/agentcore/agentcore.json` の `ROLE_CONFIG_TABLE_NAME`
+// - AgentCore CLI 側の `agentcore.json` の `ROLE_CONFIG_TABLE_NAME`
 //   （`<APPSYNC_API_ID>` プレースホルダ）
-// - `agents/agentcore/cdk/lib/cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`
+// - AgentCore CLI 側の CDK スタックの `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`
 //   と `MCP_AGENT_ASSUMABLE_ROLE_ARNS`（`<YOUR_AWS_ACCOUNT_ID>` プレースホルダ）
 // - 環境変数 `AGENTCORE_RUNTIME_ARN` / `AGENTCORE_MEMORY_ID` の手動設定
 //

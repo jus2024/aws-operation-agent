@@ -52,16 +52,14 @@ agents/.env
 # Linter キャッシュ
 **/.ruff_cache/
 
-# AgentCore CLI
-agents/agentcore/.env.local
-agents/agentcore/.llm-context/
-agents/agentcore/cdk/cdk.out/
-agents/agentcore/cdk/node_modules/
-
 # Notes (private)
 notes/
 
-# Legacy (Starter Toolkit)
+# Legacy: AgentCore CLI / Starter Toolkit
+# AgentCore のリソースは Amplify のバックエンドスタック（amplify/agent/resource.ts）で
+# 定義するようになったため、AgentCore CLI のプロジェクト（agents/agentcore/）は
+# 削除済み。CLI を再導入した場合に生成物がコミットされないよう、無視設定だけ残す。
+agents/agentcore/
 agents/.bedrock_agentcore.yaml
 agents/.bedrock_agentcore/
 

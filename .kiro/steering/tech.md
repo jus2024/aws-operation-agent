@@ -11,10 +11,9 @@ inclusion: always
 - エージェント通信: AG-UI プロトコル
 - エージェント（任意）: Python 3.12〜3.13 / Strands Agents SDK + ag-ui-strands
 - エージェント実行基盤（任意）: Amazon Bedrock AgentCore Runtime
-- エージェント管理 CLI（任意）: AgentCore CLI (`@aws/agentcore`)
+- エージェントの依存管理: uv（`uv.lock` が配布用パッケージの源）
 - リポジトリ: GitHub
-- デプロイ先（Web）: Amplify Hosting
-- デプロイ先（エージェント）: AgentCore CLI (`agentcore deploy`)
+- デプロイ先: Amplify Hosting（Web アプリとエージェントを同一スタックで一括）
 - IDE 支援: Kiro + Agent Toolkit for AWS（MCP サーバー）
 
 技術ルール:
@@ -28,14 +27,20 @@ inclusion: always
 
 ```
 ブラウザ (@copilotkit/react-core/v2 + CopilotChat)
-  → /api/copilotkit (Next.js API Route, Amplify Hosting SSR Lambda)
-    → CopilotRuntime + ExperimentalEmptyAdapter
-      → HttpAgent (fetch: sigv4Fetch でカスタム SigV4 署名)
-        → AgentCore Runtime (IAM 認証, AG-UI プロトコル)
+  → copilotkitStreamingRelay の Lambda 関数 URL (InvokeMode: RESPONSE_STREAM)
+    → Cognito JWT 署名検証
+      → CopilotRuntime + ExperimentalEmptyAdapter
+        → HttpAgent (fetch: sigv4Fetch でカスタム SigV4 署名)
+          → AgentCore Runtime (IAM 認証, AG-UI プロトコル)
 ```
 
 重要な設定:
 - バックエンドの CopilotRuntime には `ExperimentalEmptyAdapter` が必須
 - フロントエンドは `@copilotkit/react-core/v2` を使う（v1 ではない）
 - AgentCore への認証は SigV4（IAM）— JWT は CopilotKit 経由では動作しない
-- Amplify Hosting にコンピューティングロール（`bedrock-agentcore:InvokeAgentRuntime` 権限）が必要
+- 中継は Next.js の Route Handler ではなく専用 Lambda（関数 URL）で行う。Amplify Hosting の
+  SSR Compute はレスポンスストリーミングを有効化しないため
+- `bedrock-agentcore:InvokeAgentRuntime` はこの Lambda 専用の実行ロールが持つ
+  （コンピューティングロールには不要）
+- AgentCore Runtime / Memory は Amplify バックエンドスタックの一部
+  （`amplify/agent/resource.ts`、`AGENT_ENABLED=true` のときのみ）

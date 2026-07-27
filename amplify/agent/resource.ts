@@ -1,15 +1,15 @@
 /**
  * AgentCore Runtime / Memory を Amplify Gen 2 のバックエンドスタックの一部として
- * 定義する（PoC）。
+ * 定義する。
  *
  * 目的:
- * 現在このリポジトリは AgentCore を AgentCore CLI（`agentcore deploy`）で別途
- * デプロイしており、Amplify が生成する RoleConfig テーブル名を CDK 側から知る
- * 手段がないため、`agentcore.json` と `cdk-stack.ts` に `<APPSYNC_API_ID>` /
- * `<YOUR_AWS_ACCOUNT_ID>` というプレースホルダを手で埋める運用になっている。
- * 同一の CDK アプリに載せると、テーブル名・アカウント ID・Runtime ARN・Memory ID
- * がすべて synth 時に解決できるため、これらのプレースホルダと手動の環境変数設定が
- * 不要になる。
+ * 以前は AgentCore を AgentCore CLI（`agentcore deploy`）で別途デプロイしていた。
+ * その構成では Amplify が生成する RoleConfig テーブル名を CDK 側から知る手段が
+ * ないため、`agentcore.json` と CLI 側の CDK スタックに `<APPSYNC_API_ID>` /
+ * `<YOUR_AWS_ACCOUNT_ID>` というプレースホルダを手で埋める運用が必要だった。
+ * 同一の CDK アプリに載せることで、テーブル名・アカウント ID・Runtime ARN・
+ * Memory ID がすべて synth 時に解決でき、これらのプレースホルダと手動の環境変数
+ * 設定が不要になった。AgentCore CLI のプロジェクト（`agents/agentcore/`）は削除済み。
  *
  * Docker が不要な理由:
  * AgentCore Runtime の direct code deployment（CodeZip）を使う。コードと依存を
@@ -50,7 +50,7 @@ const AGENT_PACKAGE_DIR = fileURLToPath(
  * Runtime の実行ロールを Principal として信頼し、それぞれ ReadOnlyAccess /
  * AdministratorAccess 相当を持つ。
  *
- * 従来は `agents/agentcore/cdk/lib/cdk-stack.ts` に
+ * 以前は AgentCore CLI 側の CDK スタックに
  * `arn:aws:iam::<YOUR_AWS_ACCOUNT_ID>:role/...` というプレースホルダ付きの ARN を
  * 直書きしていたが、Amplify のスタック内であればアカウント ID は
  * `Stack.of(scope).account` で解決できるため、ロール名だけを持てば足りる。
@@ -117,7 +117,7 @@ export interface CreateAgentCoreResourcesProps {
  *
  * リソース名に環境ごとのサフィックスを付ける理由:
  * AgentCore の Runtime 名・Memory 名はアカウント / リージョン単位で一意である
- * 必要がある。従来は `agentcore.json` に固定名を書いていたので衝突しなかったが、
+ * 必要がある。以前は `agentcore.json` に固定名を書いていたので衝突しなかったが、
  * Amplify のスタックに載せると sandbox・`develop`・`main` が同一アカウントに
  * 同時に存在しうるため、スタックごとに異なる名前にしないと 2 つ目のデプロイが
  * 失敗する。`Names.uniqueId` は synth 時に確定する（トークンではない）ため
@@ -143,7 +143,7 @@ export function createAgentCoreResources(
 
   // --- AgentCore Memory ---------------------------------------------------
   // 会話の発言本文の唯一の正。actor_id（Cognito sub）と session_id でスコープされる。
-  // 保持期間 365 日・長期記憶（SEMANTIC）有効は、従来 agentcore.json の
+  // 保持期間 365 日・長期記憶（SEMANTIC）有効は、以前 agentcore.json の
   // `memories` に定義していた設定をそのまま移したもの。
   // description は ASCII のみにする。IAM は description に
   // `[\u0009\u000A\u000D\u0020-\u007E\u00A1-\u00FF]`（実質 Latin-1）しか許さず、
@@ -299,7 +299,7 @@ export function createAgentCoreResources(
   // `grantReadData` ではなく明示的な PolicyStatement を使う理由:
   // `grantReadData` は GetItem / Query / BatchGetItem / DescribeTable、および
   // ストリームの GetRecords まで含むが、エージェントは Role_Entry 一覧を
-  // `Scan` するだけであり、既存の `agents/agentcore/cdk/lib/cdk-stack.ts` も
+  // `Scan` するだけであり、以前の AgentCore CLI 側の CDK スタックも
   // `dynamodb:Scan` のみを許可している。統合によって権限が広がらないように
   // アクションを揃える。
   executionRole.addToPolicy(
@@ -345,7 +345,7 @@ export function createAgentCoreResources(
       ],
     },
     environmentVariables: {
-      // 従来 agentcore.json に `RoleConfig-<APPSYNC_API_ID>-NONE` と書いていた値。
+      // 以前 agentcore.json に `RoleConfig-<APPSYNC_API_ID>-NONE` と書いていた値。
       // 同一スタック内なので実テーブル名がデプロイ時に解決される。
       ROLE_CONFIG_TABLE_NAME: props.roleConfigTable.tableName,
       ROLE_CONFIG_CACHE_TTL_SECONDS,

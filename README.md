@@ -29,7 +29,7 @@ AI エージェントを組み込んだサンプルアプリケーションで�
 | エージェント | Python 3.12〜3.13 / Strands Agents SDK + `ag-ui-strands` |
 | エージェント実行基盤 | Amazon Bedrock AgentCore Runtime |
 | AWS 操作 | AWS MCP Server（Model Context Protocol） |
-| エージェント管理 | AgentCore CLI (`@aws/agentcore`) |
+| エージェントのデプロイ | Amplify Gen 2 の CDK（`amplify/agent/resource.ts`）+ direct code deployment |
 | ホスティング | Amplify Hosting |
 
 ## アーキテクチャ概要
@@ -54,6 +54,13 @@ AI エージェントを組み込んだサンプルアプリケーションで�
   `text/event-stream` レスポンスが本番環境でのみバッファリングされてしまう問題があったため、
   中継処理を独立した Lambda 関数（Function URL、`RESPONSE_STREAM`）に切り出しました。
   `route.ts` は削除済みです（詳細は [新しい Lambda 関数（`copilotkitStreamingRelay`）について](#新しい-lambda-関数copilotkitstreamingrelayについて) を参照）。
+- **AgentCore Runtime と Memory は Amplify バックエンドスタックの一部**です
+  （`amplify/agent/resource.ts`、`AGENT_ENABLED=true` のときのみ作成）。同一スタックに
+  載っているため、RoleConfig テーブル名・Runtime ARN・Memory ID・IAM ポリシーの Resource が
+  すべて synth 時に解決され、手動で ARN を調べて環境変数に設定する作業がありません。
+  Runtime へは Docker 不要の
+  [direct code deployment（CodeZip）](https://aws.amazon.com/blogs/machine-learning/iterate-faster-with-amazon-bedrock-agentcore-runtime-direct-code-deployment/)
+  で配布します。
 - エージェントはセッションで選択されたロール（Role_Set）の中から、ツール呼び出しごとに
   適切な IAM ロールを選び `sts:AssumeRole` を実行します。ロールの ARN や AWS アカウント ID は
   エージェントの応答（LLM への入力）に一切露出しません。
@@ -75,9 +82,10 @@ src/                          # フロントエンド（Next.js App Router）
   lib/agent/                  # セッション管理・ロール解決・永続化などの純粋関数モジュール（CopilotProvider.tsx を含む）
 amplify/                      # Amplify Gen 2 バックエンド定義（Cognito / Data モデル / カスタム関数）
   functions/copilotkitStreamingRelay/  # CopilotKit Runtime 中継処理（Lambda 関数 URL、ストリーミング対応）
-agents/                       # AgentCore CLI プロジェクト
-  agentcore/                  # AgentCore CLI 設定・CDK インフラ定義
-  app/AWS_MCP_Agent/           # エージェント本体（Strands Agent + AG-UI サーバー）
+  agent/resource.ts           # AgentCore Runtime / Memory / 実行ロールの定義
+agents/                       # エージェント本体（Web アプリ層は含まない）
+  app/AWS_MCP_Agent/           # Strands Agent + AG-UI サーバー
+scripts/                      # 配布用パッケージのビルドスクリプト
 docs/                         # 詳細ドキュメント（セットアップ・デプロイ・アーキテクチャ）
 .kiro/                        # Kiro ワークスペース設定（steering / specs / skills）
 .github/                      # CI ワークフロー
@@ -95,7 +103,7 @@ docs/                         # 詳細ドキュメント（セットアップ・
 
 - Node.js 20 以上、npm
 - AWS アカウントと認証情報（`aws configure` 設定済み）
-- エージェント機能を試す場合: Python 3.12〜3.13、Docker、AgentCore CLI
+- エージェント機能を試す場合: [uv](https://docs.astral.sh/uv/)（Docker は不要）
 
 ### Web アプリを動かす
 
@@ -129,41 +137,106 @@ npm run dev
 
 ## エージェントを動かす（デプロイが必要）
 
-エージェント機能の完全な動作確認には、AWS 側の IAM ロール準備と AgentCore Runtime への
-デプロイが必要です。ローカルではエージェント単体の起動確認（`agentcore dev` / `uvicorn`）
-のみ可能で、フロントエンドとの結合テストは Amplify Hosting のデプロイ環境で行います
-（SigV4 署名にコンピューティングロールが必要なため）。
+エージェント機能（AgentCore Runtime / Memory）は **Amplify バックエンドスタックの一部**
+としてデプロイされます。別のデプロイコマンドはありません。`AGENT_ENABLED=true` を設定して
+通常どおりデプロイすれば、AgentCore のリソースが一緒に作られます。
 
-> **最初に**: このリポジトリは公開用に、AWS アカウント ID やリソース ID を
-> `<YOUR_AWS_ACCOUNT_ID>` などのプレースホルダに置き換えてあります。埋める値・取得方法・
-> 埋める順序は [docs/setup.md のプレースホルダと ID の埋め方](docs/setup.md#プレースホルダと-id-の埋め方エージェント機能を使う場合)
-> にまとめてあります。以下の手順の前に一読してください。
+同一スタックに載っているため、テーブル名・アカウント ID・Runtime ARN・Memory ID はすべて
+synth 時に解決されます。**手動で ARN を調べてコンソールに貼る作業はありません。**
 
-### 1. AWS 側でロール用の IAM ロールを準備する
+ローカルではエージェント単体の起動確認（`uvicorn`）のみ可能で、フロントエンドとの結合
+テストは Amplify Hosting のデプロイ環境で行います（SigV4 署名に中継 Lambda 専用の実行
+ロールが必要なため）。
+
+### 1. 配布用パッケージをビルドする
+
+AgentCore Runtime へは
+[direct code deployment（CodeZip）](https://aws.amazon.com/blogs/machine-learning/iterate-faster-with-amazon-bedrock-agentcore-runtime-direct-code-deployment/)
+でデプロイします。CDK はディレクトリを zip して S3 に上げるだけなので、Linux arm64 向けに
+依存を展開したディレクトリを事前に作ります。
+
+```bash
+./scripts/build-agent-package.sh
+```
+
+- Docker は不要です（クロス解決なので macOS や x86 のマシンでも実行できます）
+- 依存は `agents/app/AWS_MCP_Agent/uv.lock` から解決されるため再現可能です
+- 出力は `agents/app/AWS_MCP_Agent/.build/`（約 130MB、`.gitignore` 対象）
+- Amplify Hosting のビルド中は `amplify.yml` の `preBuild` が自動実行します
+
+### 2. `AGENT_ENABLED` を有効にしてデプロイする
+
+Amplify Hosting の場合は、コンソール →「ホスティング」→「環境変数」で
+`AGENT_ENABLED=true` を設定して Git push します。
+
+ローカルの sandbox で試す場合はこうします。
+
+```bash
+AGENT_ENABLED=true npx ampx sandbox
+```
+
+デプロイ後、作られたリソースの識別子は `amplify_outputs.json` に出力されます。
+
+```bash
+cat amplify_outputs.json | jq .custom
+{
+  "copilotkitRelayUrl": "https://xxxxxxxx.lambda-url.us-west-2.on.aws/",
+  "roleConfigTableName": "RoleConfig-xxxxxxxxxxxxxxxxxxxxxxxxxx-NONE",
+  "agentCoreRuntimeArn": "arn:aws:bedrock-agentcore:...:runtime/AWS_MCP_Agent_main_branch-xxxxxxxxxx",
+  "agentCoreMemoryId": "AWS_MCP_AgentMemory_main_branch-xxxxxxxxxx"
+}
+```
+
+`agentCoreRuntimeArn` と `agentCoreMemoryId` は確認用です。中継 Lambda には CDK が直接
+配線するため、環境変数として設定する必要はありません。
+
+Runtime 名 / Memory 名は Amplify のバックエンド識別子から作られるので（`AWS_MCP_Agent_main_branch`
+など）、同一アカウントに複数のブランチ環境を共存させられます。詳細は
+[docs/environments.md](docs/environments.md#リソース名の付き方) を参照してください。
+
+> **Memory の削除保護**: AgentCore Memory は会話履歴（発言本文の唯一の正）を保持するため
+> `RemovalPolicy.RETAIN` を設定しています。Amplify アプリを削除しても Memory は残ります。
+> 不要になったら手動で削除してください。
+
+### 3. AssumeRole 対象の IAM ロールを準備する
 
 エージェントが `AssumeRole` する対象の IAM ロールを、操作スコープ別に用意します
 （例: 読み取り専用ロールに `ReadOnlyAccess`、管理者ロールに必要な権限をアタッチ）。
+これらは CDK の管理外です（既存の運用ロールを流用できるようにするため）。
 
-ロールを AgentCore Runtime の実行ロールに引き受けさせる（`sts:AssumeRole` を許可する）方法は、
-そのロールが **AgentCore Runtime と同一の AWS アカウント内にあるか**、
-**別の AWS アカウントにあるか**で手順が異なります。以下、順に説明します。
+既定では次の 2 つのロール名を前提にしています（`amplify/agent/resource.ts` の
+`ASSUMABLE_ROLE_NAMES`）。名前を変える場合はこの定数を書き換えてください。アカウント ID は
+`Stack` から解決されるため指定不要です。
 
-#### AgentCore Runtime の実行ロールを確認する
+| ロール名 | 想定する権限 |
+|---------|-------------|
+| `AgentMCPReadOnlyRole` | `ReadOnlyAccess` |
+| `AgentMCPAdminRole` | `AdministratorAccess` など、必要な範囲 |
 
-どちらの手順でも、まず AgentCore Runtime の実行ロールの ARN を確認しておく必要があります。
+> **この権限設計が操作の実効的な境界です。** 読み取り専用で使わせたいロールには、必ず
+> 読み取り専用の権限だけを付けてください（理由は
+> [操作の境界を実際に守っているのは IAM ロールの権限です](#操作の境界を実際に守っているのは-iam-ロールの権限です)）。
 
-- `agentcore status` の実行結果、または AWS コンソールの Bedrock AgentCore の Runtime 詳細画面で確認する
-- あるいは IAM コンソールのロール一覧で、`AgentCore-agents-default-Application<エージェント名>-` から始まる名前のロールを検索する
+#### Runtime の実行ロールを確認する
 
-以下、この実行ロールの ARN を `<RUNTIME_EXECUTION_ROLE_ARN>`、ロール名部分を
+信頼ポリシーに指定する Principal は、デプロイ時に作られる Runtime の実行ロールです。
+手順 2 のデプロイ後に確認します。
+
+```bash
+aws iam list-roles \
+  --query "Roles[?contains(RoleName, 'AwsMcpAgentRuntimeRole')].Arn" \
+  --output text
+```
+
+複数の環境をデプロイしている場合は複数出るので、対象のスタック名（`amplify-<namespace>-<name>-<type>-`）
+で見分けてください。以下、この ARN を `<RUNTIME_EXECUTION_ROLE_ARN>`、ロール名部分を
 `<RUNTIME_EXECUTION_ROLE_NAME>` として説明します。
 
-#### 1-A. 同一アカウントの場合（追加のコード変更・再デプロイ不要）
+#### 3-A. 同一アカウントの場合（追加のコード変更・再デプロイ不要）
 
-追加したいロールが AgentCore Runtime と同じ AWS アカウントにある場合、**そのロールの
-信頼ポリシー（Trust Policy）に実行ロールを Principal として追加するだけ**で有効になります。
-CDK コード（後述の `MCP_AGENT_ASSUMABLE_ROLE_ARNS`）の変更も `agentcore deploy` の再実行も
-不要です。
+追加したいロールが Runtime と同じ AWS アカウントにある場合、**そのロールの信頼ポリシー
+（Trust Policy）に実行ロールを Principal として追加するだけ**で有効になります。
+`ASSUMABLE_ROLE_NAMES` に名前が入っていれば、CDK 側の変更も再デプロイも不要です。
 
 これは AWS IAM の仕様によるものです。同一アカウント内であれば、ターゲットロールの
 信頼ポリシー（リソースベースポリシー）が Principal を明示的に許可していれば、
@@ -191,176 +264,81 @@ CDK コード（後述の `MCP_AGENT_ASSUMABLE_ROLE_ARNS`）の変更も `agentc
    }
    ```
 
-3. ロールに必要な権限をアタッチする（例: 読み取り専用なら `ReadOnlyAccess`、管理者ロールなら
-   必要な操作を許可するカスタムポリシー）
-4. 後述の「4. ロールを登録する」に進み、画面からこのロールの ARN・表示名・操作スコープを登録する
+3. ロールに必要な権限をアタッチする（例: 読み取り専用なら `ReadOnlyAccess`）
+4. ロール名が `ASSUMABLE_ROLE_NAMES` に含まれていない場合は、`amplify/agent/resource.ts` に
+   追記して再デプロイする
+5. 後述の「5. ロールを登録する」に進み、画面からこのロールの ARN・表示名・操作スコープを登録する
 
-これでロールが有効になります。CDK の変更や `agentcore deploy` は不要です。
+#### 3-B. クロスアカウントの場合（コードの変更 + 再デプロイが必要）
 
-#### 1-B. クロスアカウントの場合（CDK の変更 + 再デプロイが必要）
-
-追加したいロールが AgentCore Runtime とは**別の AWS アカウント**にある場合、
-1-A の信頼ポリシーだけでは不十分です。AWS STS の `AssumeRole` は、呼び出し元
-（実行ロール）のアイデンティティベースポリシーと、ターゲットロールのリソースベース
-ポリシー（信頼ポリシー）の**両方**が許可している必要があり、この「両方必須」の
-原則はクロスアカウントでは省略されません（1-A で説明した同一アカウント内の
-暗黙的な許可の仕組みが働かないためです）。
+追加したいロールが Runtime とは**別の AWS アカウント**にある場合、3-A の信頼ポリシー
+だけでは不十分です。AWS STS の `AssumeRole` は、呼び出し元（実行ロール）の
+アイデンティティベースポリシーと、ターゲットロールの信頼ポリシーの**両方**が許可して
+いる必要があり、この「両方必須」の原則はクロスアカウントでは省略されません
+（3-A で説明した同一アカウント内の暗黙的な許可の仕組みが働かないためです）。
 
 手順:
 
 1. **ターゲットアカウント側**: ロールを作成し、信頼ポリシーで実行ロールを Principal として
-   許可する（内容は 1-A の手順2と同じ）
+   許可する（内容は 3-A の手順 2 と同じ）
 
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Principal": {
-           "AWS": "arn:aws:iam::<AgentCore Runtime が動いているアカウントID>:role/<RUNTIME_EXECUTION_ROLE_NAME>"
-         },
-         "Action": "sts:AssumeRole"
-       }
-     ]
-   }
-   ```
-
-2. **AgentCore Runtime 側（このリポジトリの CDK）**: `agents/agentcore/cdk/lib/cdk-stack.ts`
-   の `MCP_AGENT_ASSUMABLE_ROLE_ARNS` に、追加するロールの ARN を追記する
+2. **Runtime 側（このリポジトリ）**: `amplify/agent/resource.ts` の実行ロールに、
+   クロスアカウントのロール ARN への `sts:AssumeRole` を追加する。
+   `ASSUMABLE_ROLE_NAMES` はアカウント内のロール名を前提にしているため、別アカウントの
+   ARN はフルパスで指定する必要がある
 
    ```ts
-   const MCP_AGENT_ASSUMABLE_ROLE_ARNS = [
-     'arn:aws:iam::<既存アカウントID>:role/AgentMCPReadOnlyRole',
-     'arn:aws:iam::<既存アカウントID>:role/AgentMCPAdminRole',
-     'arn:aws:iam::<クロスアカウントID>:role/<新しいロール名>', // 追加
-   ];
+   executionRole.addToPolicy(
+     new iam.PolicyStatement({
+       actions: ["sts:AssumeRole"],
+       resources: ["arn:aws:iam::<クロスアカウントID>:role/<ロール名>"],
+     })
+   );
    ```
 
-3. CDK を再デプロイする
+3. バックエンドを再デプロイする（`git push` または `AGENT_ENABLED=true npx ampx sandbox`）
 
-   ```bash
-   cd agents
-   agentcore deploy
-   ```
+4. 後述の「5. ロールを登録する」に進み、画面からこのロールの ARN・表示名・操作スコープを登録する
 
-4. 後述の「4. ロールを登録する」に進み、画面からこのロールの ARN・表示名・操作スコープを登録する
-
-> **1-A と 1-B で手順が違う理由**: `sts:AssumeRole` の許可判定は、原則として呼び出し元の
+> **3-A と 3-B で手順が違う理由**: `sts:AssumeRole` の許可判定は、原則として呼び出し元の
 > アイデンティティベースポリシーとターゲット側の信頼ポリシーの両方が必要です。ただし
 > 同一アカウント内に限り、信頼ポリシーがアカウント内の Principal を明示的に許可していれば、
 > 呼び出し元側の許可は暗黙的に不要とみなされます。クロスアカウントではこの暗黙的な許可が
-> 働かないため、実行ロール側のポリシー（`MCP_AGENT_ASSUMABLE_ROLE_ARNS`）への追記と
-> 再デプロイが必須になります。
+> 働かないため、実行ロール側のポリシーへの追記と再デプロイが必須になります。
 
-### 2. エージェントをデプロイする
+### 4. 環境変数を設定して再デプロイする
 
-```bash
-cd agents
-agentcore deploy
-```
+手動設定が必要な環境変数は 3 つだけです。うち 2 つはデプロイ後に値が確定するため、
+**初回はデプロイ → 値を確認 → 設定 → 再デプロイ**の順になります。
 
-初回は CDK の bootstrap を含むため数分かかります。デプロイ後、`agentcore status` で
-Runtime ARN を確認してください。
+Amplify コンソール →「ホスティング」→「環境変数」:
 
-取得した Runtime ARN は `AGENTCORE_RUNTIME_ARN`（`copilotkitStreamingRelay` の環境変数、
-`NEXT_PUBLIC_` プレフィックスなし）に設定します。ローカルで sandbox を使う場合は
-`.env.local` に記載するかシェルで `export` した状態で `npx ampx sandbox` を実行してください
-（詳細は [新しい Lambda 関数（`copilotkitStreamingRelay`）について](#新しい-lambda-関数copilotkitstreamingrelayについて) を参照）。
+| キー | 値 |
+|------|-----|
+| `AGENT_ENABLED` | `true`（手順 2 で設定済み） |
+| `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | `amplify_outputs.json` の `custom.copilotkitRelayUrl` |
+| `ROLE_CONFIG_TABLE_NAME` | `amplify_outputs.json` の `custom.roleConfigTableName` |
 
-#### 環境を増やす場合の Runtime 追加について
+`ROLE_CONFIG_TABLE_NAME` は `GET /api/roles`（`src/app/api/roles/route.ts`）が DynamoDB を
+`Scan` する際に読むテーブル名です。`NEXT_PUBLIC_` プレフィックスを付けないでください
+（サーバーサイドの Route Handler でのみ使用するため、ブラウザに露出させる必要がありません）。
+エージェント（Runtime）側の同名の環境変数は CDK が同じテーブルから自動設定するため、
+**両者がずれることはありません**。
 
-初期状態の `agents/agentcore/agentcore.json` には Runtime が **1 つ**（`AWS_MCP_Agent`）だけ
-定義されています。`agentcore deploy` には Runtime を選んでデプロイするオプションがなく、
-`runtimes` 配列の全エントリが同じ CloudFormation スタックにまとめてデプロイされるため、
-エントリ数がそのまま作られる Runtime の数になります。まずは 1 つで動かし、環境を分ける
-必要が出てから増やす構成にしています。
+あわせて、コンピューティングロール（`AmplifySSRComputeRole`）に `dynamodb:Scan` を追加する
+必要があります（下記を参照）。
 
-ステージング環境を追加する典型的な流れは次のとおりです。
-
-1. Amplify Hosting に `develop` ブランチを接続してデプロイする
-2. `develop` のバックエンドが生成した RoleConfig テーブル名を確認する
-   （`amplify:branch-name` タグで判別）
-3. `agentcore.json` の `runtimes` に `AWS_MCP_Agent_Dev` エントリを追加する
-   （`AWS_MCP_Agent` をコピーし、`name` と `ROLE_CONFIG_TABLE_NAME` を差し替える）
-4. `agents/agentcore/cdk/lib/cdk-stack.ts` の `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME` に
-   対応するテーブル ARN を追加する
-5. `cd agents && agentcore deploy`
-6. `develop` ブランチの Amplify 環境変数 `AGENTCORE_RUNTIME_ARN` に、追加した Runtime の
-   ARN を設定する
-
-追加した Runtime は独立した Runtime ARN・実行ロール・IAM 権限（自分の
-`ROLE_CONFIG_TABLE_NAME` に対応するテーブルへの `dynamodb:Scan` のみ）を持つため、
-ステージング側の変更が本番用 Runtime に影響することはありません。IAM 権限を付与する
-CDK 側のループは `AWS_MCP_Agent` というプレフィックスで対象を判定しているので、
-`AWS_MCP_Agent_Dev` という命名にしておけばコードの変更は不要です。
-
-AgentCore Memory（`AWS_MCP_AgentMemory`）はプロジェクト内の全 Runtime に自動でワイヤリング
-される仕組みのため、**追加した Runtime とも共有されます**。会話履歴を環境ごとに分けたい
-場合は、`agentcore.json` の `memories` に別の Memory を定義する必要があります。
-
-> **コスト**: AgentCore Runtime は消費ベース課金（セッション中に消費した CPU とピークメモリ、
-> 秒単位）なので、呼ばれていない Runtime の待機コストは発生しません。Runtime を増やしたときに
-> 常時かかるのはコンテナイメージの ECR ストレージ（Runtime ごとに別リポジトリ）です。
-
-### 3. Amplify Hosting をデプロイし、接続する
-
-1. Amplify コンソールでリポジトリを接続し、Web アプリをデプロイする
-2. コンピューティングロール（`AmplifySSRComputeRole`）に以下の権限を追加する（下記を参照）
-   - `dynamodb:Scan`（`main` ブランチ用の RoleConfig テーブルの読み取り用）
-
-   > `bedrock-agentcore:InvokeAgentRuntime` は **コンピューティングロールには不要**です。
-   > この権限は `copilotkitStreamingRelay`（Amplify Gen 2 のカスタム関数、後述）専用の
-   > Lambda 実行ロールが持ち、Amplify バックエンドのデプロイ（`npx ampx pipeline-deploy`、
-   > 手順1の Amplify コンソールでのデプロイに含まれる）時に自動的に作成・設定されます。
-3. Amplify コンソール →「ホスティング」→「環境変数」で、以下を設定する
-
-   | キー | 値 |
-   |------|-----|
-   | `AGENTCORE_RUNTIME_ARN` | 手順2で取得した Runtime ARN。バックエンドビルド（`pipeline-deploy`）時に `copilotkitStreamingRelay` の環境変数・IAM ポリシーの `Resource` に反映される |
-   | `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | `copilotkitStreamingRelay` の関数 URL（手順3のデプロイ後に確認、後述） |
-   | `ROLE_CONFIG_TABLE_NAME` | RoleConfig テーブル名（後述） |
-
-   `ROLE_CONFIG_TABLE_NAME` は `GET /api/roles`（`src/app/api/roles/route.ts`）が
-   DynamoDB を `Scan` する際に読むテーブル名です。`NEXT_PUBLIC_` プレフィックスを
-   付けないでください（サーバーサイドの Route Handler でのみ使用するため、
-   ブラウザに露出させる必要がありません）。テーブル名は次のいずれかの方法で確認できます:
-   - AWS コンソール → DynamoDB → テーブル一覧で `RoleConfig-xxxxxxxxxxxxxxxxxxxxxxxxxx-NONE`
-     という名前のテーブルを探す
-   - Amplify コンソール → アプリ →（対象ブランチ）→「バックエンド」→ 該当の
-     データリソースから確認する
-
-   > **`-NONE` という接尾辞について**: Amplify Gen 2 が生成する DynamoDB テーブル名は
-   > `<モデル名>-<AppSync API の ID>-<Amplify API 環境名>` という形式ですが、
-   > 現在の Amplify Gen 2 の実装ではこの「Amplify API 環境名」部分は
-   > sandbox・ブランチデプロイのいずれでも常に固定文字列 `NONE` になります
-   > （ブランチ名がテーブル名に反映されることはありません）。そのため
-   > sandbox 用と各ブランチ用のテーブルは、どちらも末尾が `-NONE` になりますが、
-   > 中間の AppSync API ID 部分が異なる別々の実体です。どのテーブルがどの
-   > ブランチのものかを区別する場合は、テーブルに付与されている
-   > `amplify:branch-name` タグ（AWS コンソール → DynamoDB → 対象テーブル →
-   > 「タグ」タブ）で確認してください。
-
-   `agents/agentcore/agentcore.json` の `ROLE_CONFIG_TABLE_NAME`（Agent 側が同じ
-   テーブルを読む設定）と必ず同じ値にしてください。両者の値が異なると、画面から
-   登録したロールがエージェント側の Role_Set 選択に反映されません。
-
-   > **重要**: Amplify Hosting は、Next.js のサーバーサイド（Route Handler
-   > を含む）に対して、コンソールで設定した環境変数をデフォルトでは
-   > 渡しません（ビルド時のシークレット漏洩を防ぐための仕様。
-   > [AWS 公式ドキュメント](https://docs.aws.amazon.com/amplify/latest/userguide/ssr-environment-variables.html)）。
-   > `NEXT_PUBLIC_` プレフィックス付きの変数はビルド時に自動的にバンドルへ
-   > 埋め込まれるため問題になりませんが、`ROLE_CONFIG_TABLE_NAME` は
-   > サーバーサイド専用の環境変数のため、`amplify.yml` のビルドコマンドで
-   > 明示的に `.env.production` へ書き出す必要があります（このリポジトリの
-   > `amplify.yml` には既に対応する行が入っています）。この設定が抜けると、
-   > コンソールで環境変数を設定していても `GET /api/roles` は
-   > `process.env.ROLE_CONFIG_TABLE_NAME` が `undefined` のまま DynamoDB
-   > `Scan` を呼び出し、`ValidationException: Value null at 'tableName'`
-   > で失敗します（画面上は「新規チャット」ダイアログが一瞬開いてすぐ
-   > 閉じる、という分かりにくい症状になります）。
-4. 再デプロイする
-
+> **重要**: Amplify Hosting は、Next.js のサーバーサイド（Route Handler を含む）に対して、
+> コンソールで設定した環境変数をデフォルトでは渡しません（ビルド時のシークレット漏洩を
+> 防ぐための仕様。
+> [AWS 公式ドキュメント](https://docs.aws.amazon.com/amplify/latest/userguide/ssr-environment-variables.html)）。
+> `NEXT_PUBLIC_` プレフィックス付きの変数はビルド時に自動的にバンドルへ埋め込まれるため
+> 問題になりませんが、`ROLE_CONFIG_TABLE_NAME` はサーバーサイド専用のため、`amplify.yml` の
+> ビルドコマンドで明示的に `.env.production` へ書き出す必要があります（このリポジトリの
+> `amplify.yml` には既に対応する行が入っています）。この設定が抜けると、コンソールで
+> 環境変数を設定していても `GET /api/roles` は `process.env.ROLE_CONFIG_TABLE_NAME` が
+> `undefined` のまま DynamoDB `Scan` を呼び出して失敗します（画面上は「新規チャット」
+> ダイアログが一瞬開いてすぐ閉じる、という分かりにくい症状になります）。
 #### コンピューティングロールへの権限追加について
 
 「コンピューティングロール」は Amplify Hosting がアプリ単位で自動作成する IAM ロール
@@ -440,21 +418,22 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
 - **デプロイフロー**: 既存の Amplify Hosting のデプロイフロー（Git push → 自動ビルド、
   `npx ampx pipeline-deploy`）にそのまま統合されています。`amplify/backend.ts` の
   `defineBackend({ auth, data, copilotkitStreamingRelay })` に含まれるため、新しい CDK スタックや
-  `agentcore deploy` の追加実行は不要です。ローカル開発では `npx ampx sandbox` でこの Lambda も
+  別のデプロイコマンドは不要です。ローカル開発では `npx ampx sandbox` でこの Lambda も
   一緒にデプロイされます。
-- **新規に必要な環境変数**:
+- **環境変数**: 手動設定が必要なのは
+  `NEXT_PUBLIC_COPILOTKIT_RELAY_URL`（`CopilotProvider.tsx` の `runtimeUrl` が参照する
+  この Lambda の関数 URL、フロントエンドのビルド時に読まれる）だけです。
 
-  | 変数 | 設定場所 | 説明 |
-  |------|---------|------|
-  | `AGENTCORE_RUNTIME_ARN` | CDK synth 時のシェル環境変数（ローカルは `.env.local` / シェルの `export`、本番は Amplify コンソールの環境変数） | `copilotkitStreamingRelay` の Lambda 環境変数、および IAM ポリシーの `Resource` の両方に反映される。旧 `NEXT_PUBLIC_AGENTCORE_RUNTIME_ARN`（Route Handler 用）はこの Lambda では読まれない |
-  | `AGENTCORE_MEMORY_ID` | CDK synth 時のシェル環境変数（`AGENTCORE_RUNTIME_ARN` と同じ運用パターン） | AgentCore Memory の ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）。Memory 読み出し（`ListEvents`）の呼び出しと IAM ポリシーの `Resource` の絞り込みに使う。**未設定の場合は `bedrock-agentcore:ListEvents` のポリシー自体を付与しない**（`AGENTCORE_RUNTIME_ARN` と同じフェイルセーフ方針） |
-  | `NEXT_PUBLIC_COPILOTKIT_RELAY_URL` | フロントエンドのビルド時環境変数（`.env.local` または Amplify コンソール） | `CopilotProvider.tsx` の `runtimeUrl` が参照する、`copilotkitStreamingRelay` の関数 URL |
+  | 変数 | 供給元 |
+  |------|--------|
+  | `AGENTCORE_RUNTIME_ARN` | `amplify/agent/resource.ts` が作成した Runtime の ARN（`backend.ts` で配線） |
+  | `AGENTCORE_MEMORY_ID` | 同 Memory の ID（同上） |
+  | `CHAT_SESSION_TABLE_NAME` | `backend.data.resources.tables["ChatSession"]` |
+  | `COGNITO_USER_POOL_ID` / `COGNITO_USER_POOL_CLIENT_ID` | `backend.auth.resources.userPool` / `userPoolClient` |
 
-  > **`COGNITO_USER_POOL_ID` / `COGNITO_USER_POOL_CLIENT_ID` について**: この2つも
-  > `copilotkitStreamingRelay` の Lambda 環境変数として必要ですが、上記のように手動で
-  > 設定する必要はありません。`amplify/backend.ts` が Cognito リソース
-  > （`backend.auth.resources.userPool` / `userPoolClient`）から synth 時に自動配線します。
-  > Memory 読み出しエンドポイントの Cognito JWT 署名検証（後述）に使用します。
+  いずれも `defineBackend({...})` 実行後にしか揃わないリソースなので、`resource.ts` の
+  `defineFunction((scope) => ...)` コールバックではなく `backend.ts` で配線しています。
+  Cognito の 2 つは Memory 読み出しエンドポイントの JWT 署名検証（後述）に使います。
 
   `copilotkitStreamingRelay` の関数 URL は `npx ampx sandbox` / `pipeline-deploy` の実行後、
   `amplify_outputs.json` の `custom.copilotkitRelayUrl` で確認できます。この値を
@@ -473,7 +452,8 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
   > 全てのオリジンが追加設定なしで動作します。
 - **新規に必要な IAM 権限**: `copilotkitStreamingRelay` 専用の Lambda 実行ロール（CDK が自動作成）に、
   `bedrock-agentcore:InvokeAgentRuntime` を許可するインラインポリシーが付与されます
-  （`Resource` は `AGENTCORE_RUNTIME_ARN` から導出され、未設定時は権限自体を付与しません）。
+  （`Resource` は作成した Runtime の ARN に限定されます。`AGENT_ENABLED` が有効でない場合は
+  Runtime が存在しないため、ポリシー自体が付与されません）。
   これは以前 `AmplifySSRComputeRole` に付与していた同名の権限を引き継いだものです。
   **`AmplifySSRComputeRole` に `bedrock-agentcore:InvokeAgentRuntime` を追加する必要はありません**
   （前述の「コンピューティングロールへの権限追加について」を参照）。
@@ -482,7 +462,7 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
   以下の2つの読み取り専用権限が追加で付与されます（いずれも書き込み系アクションを含みません）。
 
   - `bedrock-agentcore:ListEvents`（Memory から過去の会話イベントを読み出す。`Resource` は
-    `AGENTCORE_MEMORY_ID` から導出され、未設定時は付与されません）
+    作成した Memory の ARN に限定されます）
   - `ChatSession` DynamoDB テーブルへの `grantReadData`（読み取り専用）。Memory 読み出し前の
     actor_id 所有権チェックのために `ChatSession.ownerUserId` を `GetItem` で参照します
     （`amplify/backend.ts` で配線）
@@ -523,17 +503,17 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
   加えて、Memory を読み出す前に `ChatSession.ownerUserId`（DynamoDB、`grantReadData` で付与された
   読み取り権限で取得）と認証済みユーザーの `actor_id` を照合し、不一致の場合は `ListEvents` 自体を
   発行せず 403 を返します。
-- **長期記憶（Semantic）の有効化・保持期間 365 日**: プロジェクト内の全 Runtime が共有する
-  Memory リソース（`agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）に対して、
+- **長期記憶（Semantic）の有効化・保持期間 365 日**: `amplify/agent/resource.ts` が定義する
+  Memory リソース（環境ごとに 1 つ、例 `AWS_MCP_AgentMemory_main_branch`）に対して、
   長期記憶戦略（`semantic_facts`、SEMANTIC、名前空間
   `/strategy/{memoryStrategyId}/actor/{actorId}/`）を有効化し、`actor_id` 単位でセッションを
   またいだ記憶抽出を可能にしました。あわせて短期記憶の保持期間（`eventExpiryDuration`）を
   従来の 30 日から **365 日**に変更しています。
 
 関連ファイル: `amplify/functions/copilotkitStreamingRelay/handler.ts`（ルーティング分岐・
-全ページ取得・認可ブロック）、同 `resource.ts`（`ListEvents` の IAM ポリシー・`AGENTCORE_MEMORY_ID`）、
-同 `memoryRestore.ts`（Memory イベント → AG-UI メッセージの変換）、`amplify/backend.ts`
-（Cognito / `ChatSession` 読み取りの配線）、`src/lib/agent/useSessionMemoryRestore.ts`
+全ページ取得・認可ブロック）、同 `memoryRestore.ts`（Memory イベント → AG-UI メッセージの変換）、
+`amplify/agent/resource.ts`（Memory の定義）、`amplify/backend.ts`
+（Cognito / `ChatSession` 読み取り / Memory 読み出し権限の配線）、`src/lib/agent/useSessionMemoryRestore.ts`
 （セッション選択時の遅延復元）。
 
 > **`ChatMessage` モデルは削除済み**: 発言内容の正のデータソースは AgentCore Memory に
@@ -551,10 +531,10 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
 > **ドロップ**され、この移行より前に作成されたセッションに残っていた過去の `ChatMessage`
 > レコードは**恒久的に失われます**（運用者が了承済み）。
 
-### 4. ロールを登録する
+### 5. ロールを登録する
 
 デプロイ後、Cognito の `ADMINS` グループに属するユーザーでログインし、画面右上の
-「ロール設定管理」から、手順1で用意した IAM ロールの ARN・表示名・操作スコープを登録します。
+「ロール設定管理」から、手順 3 で用意した IAM ロールの ARN・表示名・操作スコープを登録します。
 登録が完了すると、一般ユーザーが「新規チャット」でそのロールを選択できるようになります。
 
 デプロイ手順の詳細（IAM ポリシーの具体例、トラブルシューティングを含む）は
@@ -564,9 +544,10 @@ Runtime への転送）は、Next.js の Route Handler ではなく、`amplify/f
 
 ## コスト確認用タグ
 
-Amplify バックエンド（`amplify/backend.ts`）と AgentCore CDK スタック
-（`agents/agentcore/agentcore.json` の `tags`）の両方に `Project` / `Environment`
-タグを設定しています。コスト配分レポート（AWS Billing → コスト配分タグ）で
+Amplify バックエンドスタック（`amplify/backend.ts` の `Tags.of(backend.stack)`）に
+`Project` / `Environment` タグを設定しています。AgentCore の Runtime / Memory も
+同じスタックに含まれるため、このタグが伝播します。
+コスト配分レポート（AWS Billing → コスト配分タグ）で
 `Project=aws-operation-agent` で絞り込むと、このアプリに関連する
 AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime 等）の
 コストをまとめて確認できます。
@@ -576,18 +557,13 @@ AWS リソース（Cognito・AppSync・DynamoDB・SSR Lambda・AgentCore Runtime
   `AWS_BRANCH` 環境変数（デプロイ先ブランチ名、例: `main`）を使います。
   ローカルの `npx ampx sandbox` 実行時は `AWS_BRANCH` が存在しないため
   `sandbox` にフォールバックします。
-- **AgentCore 側**（`agents/agentcore/agentcore.json` の `tags`）:
-  AgentCore CLI には Amplify のようなブランチ＝環境という自動識別の仕組みが
-  ないため、`Environment` は固定値（デフォルトは `default`）を手動で設定します。
-  複数の環境（例: 開発用・本番用）を AgentCore CLI の複数ターゲット
-  （`aws-targets.json`）で分けて運用する場合は、それぞれの `agentcore.json` で
-  値を変更してください。
+- **AgentCore のリソース**: Runtime / Memory / 実行ロールも同じスタックに含まれるため、
+  タグ設定は不要です（`Tags.of(backend.stack)` が伝播します）。以前は AgentCore CLI 側の
+  `agentcore.json` に別途タグを書き、2 箇所を一致させる必要がありました。
 
-自分のプロジェクトとして使う場合は、両方の `Project` の値（`amplify/backend.ts` の
-`backendTags.add('Project', ...)` と `agents/agentcore/agentcore.json` の `tags.Project`）を
-実際のプロジェクト名に変更してください。**2箇所は必ず同じ値に揃えてください**（片方だけ
-変えるとコスト配分レポートが2つに分断されます）。値を変更した場合は、次回の
-`npx ampx pipeline-deploy` / `agentcore deploy` でタグが差し替わります。
+自分のプロジェクトとして使う場合は、`amplify/backend.ts` の
+`backendTags.add('Project', ...)` の値を実際のプロジェクト名に変更してください。
+変更後は次回の `npx ampx pipeline-deploy` でタグが差し替わります。
 
 ## セキュリティに関する注意事項
 
@@ -632,8 +608,7 @@ TOOL_CALL_RESULT  AccessDenied: assumed-role/AgentMCPReadOnlyRole/mcp-agent-read
 - `.env.local` や Amplify コンソールの環境変数に、AWS 認証情報やシークレットを直接
   書き込まないでください。ロールの IAM 権限設計（最小権限の原則）は利用者自身の責任で
   行ってください。
-- 本リポジトリを Fork・公開する場合は、`agents/agentcore/` 配下の CLI が生成する
-  ステート/デプロイ結果ファイル、`.env.local`、`amplify_outputs.json` に実際の AWS
+- 本リポジトリを Fork・公開する場合は、`.env.local` と `amplify_outputs.json` に実際の AWS
   アカウント ID・ARN・エンドポイント URL が書き込まれていないか確認してください
   （`.gitignore` で主要なファイルは除外済みですが、コミット履歴に既に含まれている
   場合は別途、履歴からの除去が必要です）。
@@ -643,31 +618,32 @@ TOOL_CALL_RESULT  AccessDenied: assumed-role/AgentMCPReadOnlyRole/mcp-agent-read
 ## 更新時のデプロイ
 
 ```bash
-# Web アプリ
-git push origin <ブランチ名>   # Amplify Hosting が自動デプロイ
+# エージェントのコードを変更した場合は、先に配布用パッケージを作り直す
+./scripts/build-agent-package.sh   # ローカルからデプロイする場合のみ
 
-# エージェント
-cd agents && agentcore deploy
+git push origin <ブランチ名>   # Amplify Hosting が自動デプロイ
 ```
 
-両方を更新する場合は、エージェント → フロントエンドの順にデプロイしてください。
+フロントエンド・バックエンド・エージェントのどれを変更した場合も同じ手順です。
+Amplify Hosting のビルドでは `amplify.yml` の `preBuild` がパッケージのビルドを行うため、
+push だけで完結します。
 
 ## お片付け（リソース削除）
 
 ```bash
-# 1. AgentCore Runtime の削除
-cd agents
-agentcore remove all --yes
-agentcore deploy
+# 1. Amplify Hosting の削除（AWS コンソール → Amplify → アプリを削除）
 
-# 2. Amplify Hosting の削除（AWS コンソール → Amplify → アプリを削除）
-
-# 3. sandbox の停止（ローカルで使っていた場合）
+# 2. sandbox の停止（ローカルで使っていた場合）
 npx ampx sandbox delete
 ```
 
-手動で作成した `AgentMCPAdminRole` / `AgentMCPReadOnlyRole` は CDK 管理外のため、
-不要になったら手動で削除してください（[docs/environments.md](docs/environments.md#リソースの削除)）。
+AgentCore Runtime・中継 Lambda・Runtime 実行ロールはバックエンドスタックの一部なので
+自動的に削除されます。
+
+**AgentCore Memory は `RemovalPolicy.RETAIN` のため残ります**（会話履歴を守るため）。
+手動で作成した `AgentMCPAdminRole` / `AgentMCPReadOnlyRole` も CDK 管理外です。
+いずれも不要になったら手動で削除してください
+（[docs/environments.md](docs/environments.md#リソースの削除)）。
 
 ---
 
@@ -685,7 +661,7 @@ npx ampx sandbox delete
 | 対象 | 品質ゲート（GitHub Actions） | デプロイ |
 |------|------------------------------|---------|
 | Web アプリ | `.github/workflows/ci.yml` — lint（ESLint）、型チェック（`tsc --noEmit`） | Amplify Hosting（Git push で自動） |
-| エージェント | なし（CI 未設定）。ローカルで `pytest` と `ruff` を実行する | AgentCore CLI（`agentcore deploy`、手動） |
+| エージェント | なし（CI 未設定）。ローカルで `pytest` と `ruff` を実行する | Amplify Hosting（Git push で自動、`AGENT_ENABLED=true` のブランチ） |
 
 `ci.yml` は `agents/**` / `docs/**` / `.kiro/**` / `*.md` を `paths-ignore` しているため、
 エージェントコードのみの変更では CI が起動しません。エージェント側の検証は
@@ -712,21 +688,24 @@ uvx ruff check --select F .         # lint（ruff は依存に含めていない
 
 1. `src/app/sample/` を削除する
 2. `amplify/data/resource.ts` の `Todo` モデルを自分のモデルに置き換える
-3. エージェント機能を使わない場合は `agents/`、`amplify/functions/copilotkitStreamingRelay/`、
-   `src/app/api/roles/`、`src/components/agent/`、`src/lib/agent/` を削除し、
-   `amplify/backend.ts` の `copilotkitStreamingRelay` 関連のインポート・配線・`backend.addOutput`
-   の呼び出しも取り除く
+3. エージェント機能を使わない場合は、まず `AGENT_ENABLED` を設定しないでください。それだけで
+   AgentCore のリソースは一切作られません（生成される CloudFormation テンプレートも
+   エージェント無しの構成と同一になります）。コードごと取り除くなら `agents/`、`scripts/`、
+   `amplify/agent/`、`amplify/functions/copilotkitStreamingRelay/`、`src/app/api/roles/`、
+   `src/components/agent/`、`src/lib/agent/` を削除し、`amplify/backend.ts` の
+   `copilotkitStreamingRelay` / `createAgentCoreResources` 関連のインポート・配線・
+   `backend.addOutput` の呼び出しも取り除く
 
 ## 詳細ドキュメント
 
 | ドキュメント | 内容 |
 |-------------|------|
-| [docs/setup.md](docs/setup.md) | セットアップ詳細・前提条件・プレースホルダの埋め方・ローカル開発の制限事項 |
+| [docs/setup.md](docs/setup.md) | セットアップ詳細・前提条件・配布用パッケージのビルド・ローカル開発の制限事項 |
 | [docs/environments.md](docs/environments.md) | 環境と運用（sandbox / ステージング / 本番の対応関係、環境変数の設定場所、環境を作り直したときの更新手順） |
 | [docs/deployment.md](docs/deployment.md) | デプロイ手順の詳細（Amplify + AgentCore + IAM 権限） |
 | [docs/architecture-aws-mcp.md](docs/architecture-aws-mcp.md) | AWS MCP エージェント接続アーキテクチャ、既知の制約 |
 | [docs/kiro-usage.md](docs/kiro-usage.md) | Kiro（IDE）の steering/skills の使い方 |
-| [agents/app/AWS_MCP_Agent/README.md](agents/app/AWS_MCP_Agent/README.md) | エージェント開発の詳細 |
+| [agents/README.md](agents/README.md) | エージェントコードの構成・ローカル実行・実行環境の仕様 |
 
 ## ライセンス
 
