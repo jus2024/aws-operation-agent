@@ -83,8 +83,6 @@ AGENT_LEAF_MODULES: tuple[str, ...] = (
     "gateway.manager",
     "memory.session",
     "model.load",
-    "profile.injection",
-    "profile.proxy_profiles",
     "prompts.system",
     "roles.config",
     "roles.hook",
