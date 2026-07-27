@@ -19,27 +19,26 @@ import { fileURLToPath } from "node:url";
  * Requirements: 2.5, 3.1
  */
 export const copilotkitStreamingRelay = defineFunction((scope) => {
-  // AgentCore Runtime ARN は synth 時に一度だけ process.env から読み、Lambda の
-  // 環境変数と IAM ポリシーの Resource の両方に同じ値を使う（読み取りを1箇所に
-  // 集約し、環境変数とポリシーの ARN が食い違う事態を避ける。タスク 8.1 で
-  // design.md の未確定事項「ブランチ環境ごとの Runtime ARN 切り替え」を確定）。
-  const agentCoreRuntimeArn = process.env.AGENTCORE_RUNTIME_ARN ?? "";
-
-  // AgentCore Memory の ID も、AGENTCORE_RUNTIME_ARN と同様に synth 時に一度だけ
-  // process.env から読む（memory-based-chat-history タスク 1.1）。Runtime ARN とは
-  // 別の環境変数として管理する（Memory は Runtime とは別の AgentCore リソースであり、
-  // 将来的に片方だけを切り替える場合に環境変数を分離しておく必要があるため）。
+  // AgentCore Runtime ARN / Memory ID の供給元について:
   //
-  // Runtime ARN とは異なり、こちらは ARN 全体ではなく Memory ID（例:
-  // `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`、`agents/agentcore/.cli/deployed-state.json`
-  // の `memories.*.memoryId` と同じ形式）を保持する。理由は、Memory 読み取り系の API
-  // （`ListEvents` 等）が Resource の指定にリクエストパラメーターとして
-  // `memoryId` を要求するため（IAM ポリシーの Resource には後述の通り ARN 形式が
-  // 必要だが、Lambda ハンドラー側から SDK を呼ぶ際は memoryId のみで済む）。
-  // Lambda の環境変数には ID のまま渡し、IAM ポリシーの Resource は下記で
-  // `Stack.of(scope).formatArn()` を使って ID から ARN を組み立てる（synth 時の
-  // 読み取りをこの1箇所に集約し、環境変数とポリシーの Memory 識別子が
-  // 食い違う事態を避ける）。
+  // AgentCore Runtime と Memory は Amplify バックエンドスタックの一部として
+  // `amplify/agent/resource.ts` が作成する。そのため実際の値は CDK のトークン
+  // （デプロイ時に解決される参照）であり、`process.env` には現れない。環境変数と
+  // IAM ポリシーの配線は `amplify/backend.ts` で、作成した実リソースから行う。
+  //
+  // ここで `process.env` から読むのは、`AGENT_ENABLED` を設定せずにデプロイする
+  // 場合（= エージェント機能を使わない構成。Runtime も Memory も存在しない）に
+  // 環境変数のキー自体を用意しておくためのフォールバックである。値が空のときは
+  // `'*'` にフォールバックせず IAM ポリシー自体を付与しない（フェイルセーフ）。
+  //
+  // 理由: このリポジトリはエージェント機能をオプション拡張として扱う方針であり、
+  // 新規クローン直後の `npx ampx sandbox` でも Amplify バックエンド全体
+  // （auth・data・Todo アプリ）が synth / deploy できる必要がある。ARN 未設定を
+  // synth エラーにすると、エージェントを使わない利用者の初回セットアップまで
+  // 壊してしまう。handler.ts 側も未設定を実行時に検知して 500 を返す設計なので、
+  // ポリシーを付与しなければ IAM レベルでも AccessDenied になり、'*' への
+  // フォールバックより安全な失敗モードになる。
+  const agentCoreRuntimeArn = process.env.AGENTCORE_RUNTIME_ARN ?? "";
   const agentCoreMemoryId = process.env.AGENTCORE_MEMORY_ID ?? "";
 
   const fn = new NodejsFunction(scope, "copilotkit-streaming-relay", {

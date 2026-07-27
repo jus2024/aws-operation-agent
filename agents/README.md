@@ -1,104 +1,88 @@
-# AgentCore Project
+# agents/
 
-This project was created with the [AgentCore CLI](https://github.com/aws/agentcore-cli).
+AWS MCP エージェントの実行コードです。Web UI 層は含みません。
 
-## Project Structure
+インフラ定義（AgentCore Runtime / Memory / Runtime 実行ロール）はこのディレクトリでは
+なく **`amplify/agent/resource.ts`** にあります。Runtime は Amplify バックエンド
+スタックの一部としてデプロイされるため、このディレクトリに CDK やデプロイ設定は
+ありません。
 
 ```
-my-project/
-├── AGENTS.md               # AI coding assistant context
-├── agentcore/
-│   ├── agentcore.json      # Project config (agents, memories, credentials, gateways, evaluators)
-│   ├── aws-targets.json    # Deployment targets (account + region)
-│   ├── .env.local          # Secrets — API keys (gitignored)
-│   ├── .llm-context/       # TypeScript type definitions for AI assistants
-│   │   ├── agentcore.ts    # AgentCoreProjectSpec types
-│   │   ├── aws-targets.ts  # Deployment target types
-│   │   └── mcp.ts          # Gateway and MCP tool types
-│   └── cdk/                # CDK infrastructure (@aws/agentcore-cdk)
-├── app/                    # Agent application code
-└── evaluators/             # Custom evaluator code (if any)
+agents/
+└── app/
+    └── AWS_MCP_Agent/        # Strands Agent + AG-UI サーバー
+        ├── main.py           # /invocations と /ping を提供する FastAPI アプリ
+        ├── model/            # モデルローダー
+        ├── prompts/          # システムプロンプト
+        ├── roles/            # Role_Set 選択・AssumeRole・認証情報注入
+        ├── scope/            # 操作スコープ判定
+        ├── gateway/          # AWS MCP Server への接続（stdio プロキシ）
+        ├── memory/           # AgentCore Memory 連携
+        ├── clock/ units/ calc/ visualization/   # 自前ツール
+        ├── pyproject.toml    # 依存定義
+        ├── uv.lock           # ロックファイル（配布パッケージの源）
+        ├── Dockerfile        # Container ビルド用（現構成では未使用）
+        └── .build/           # 配布用パッケージのビルド出力（生成物）
 ```
 
-## Getting Started
-
-### Prerequisites
-
-- **Node.js** 20.x or later
-- **Python 3.10+** and **uv** for Python agents ([install uv](https://docs.astral.sh/uv/getting-started/installation/))
-- **AWS credentials** configured (`aws configure` or environment variables)
-- **Docker** (only for Container build agents)
-
-### Development
-
-Run your agent locally:
+## ローカル実行
 
 ```bash
-agentcore dev
+cd app/AWS_MCP_Agent
+uv sync --group dev --python 3.13
+LOCAL_DEV=1 uv run uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
-### Deployment
-
-Deploy to AWS:
+AWS リソースは作られません。AWS 操作ツールはセッションに紐づくロールがないため
+使えないので、自前ツール（計算・日時・単位変換）までの確認になります。
 
 ```bash
-agentcore deploy
+curl http://localhost:8080/ping
+
+curl -N -X POST http://localhost:8080/invocations \
+  -H "Content-Type: application/json" \
+  -d '{"threadId":"t1","runId":"r1","messages":[{"id":"m1","role":"user","content":"1+2は？"}],
+       "tools":[],"context":[],"state":{},"forwardedProps":{}}'
 ```
 
-## Commands
+## テストと lint
 
-| Command | Description |
-| --- | --- |
-| `agentcore create` | Create a new AgentCore project |
-| `agentcore add` | Add resources (agent, memory, credential, gateway, evaluator, policy) |
-| `agentcore remove` | Remove resources |
-| `agentcore dev` | Run agent locally with hot-reload |
-| `agentcore deploy` | Deploy to AWS via CDK |
-| `agentcore status` | Show deployment status |
-| `agentcore invoke` | Invoke agent (local or deployed) |
-| `agentcore logs` | View agent logs |
-| `agentcore traces` | View agent traces |
-| `agentcore eval` | Run evaluations |
-| `agentcore package` | Package agent artifacts |
-| `agentcore validate` | Validate configuration |
-| `agentcore pause` | Pause a deployed agent |
-| `agentcore resume` | Resume a paused agent |
-| `agentcore fetch` | Fetch remote resource definitions |
-| `agentcore import` | Import existing resources |
-| `agentcore update` | Check for CLI updates |
+```bash
+cd app/AWS_MCP_Agent
+uv run pytest
+uvx ruff check --select F .
+```
 
-## Configuration
+`.build/` はサードパーティの依存を展開したビルド生成物なので、`pyproject.toml` の
+`[tool.ruff]` と `[tool.pytest.ini_options]` で対象外にしています。
 
-Edit the JSON files in `agentcore/` to configure your project. See `agentcore/.llm-context/` for type definitions and validation constraints.
+## デプロイ
 
-The project uses a **flat resource model** — agents, memories, credentials, gateways, evaluators, and policies are top-level arrays in `agentcore.json`. Resources are independent; agents discover memories and credentials at runtime via environment variables or SDK calls.
+専用のデプロイコマンドはありません。配布用パッケージを作ってから、Amplify の
+バックエンドをデプロイします。
 
-## Resources
+```bash
+# リポジトリルートで
+./scripts/build-agent-package.sh
+git push origin <ブランチ名>       # または AGENT_ENABLED=true npx ampx sandbox
+```
 
-| Resource | Purpose |
-| --- | --- |
-| Agent (runtime) | HTTP, MCP, or A2A agent deployed to AgentCore Runtime |
-| Memory | Persistent context storage with configurable strategies |
-| Credential | API key or OAuth credential providers |
-| Gateway | MCP gateway that routes tool calls to targets |
-| Gateway Target | Tool implementation (Lambda, MCP server, OpenAPI, Smithy, API Gateway) |
-| Evaluator | Custom LLM-as-a-Judge or code-based evaluation |
-| Online Eval Config | Continuous evaluation pipeline for deployed agents |
-| Policy | Cedar authorization policies for gateway tools |
+詳細は [../docs/deployment.md](../docs/deployment.md) を参照してください。
 
-### Agent Types
+## 実行環境（AgentCore Runtime）
 
-- **Template agents**: Created from framework templates (Strands, LangChain/LangGraph, GoogleADK, OpenAI Agents, Autogen)
-- **BYO agents**: Bring your own code with `agentcore add agent --type byo`
-- **Import agents**: Import existing Bedrock agents with `agentcore import`
+- プロトコル: AG-UI（`protocolConfiguration: AGUI`）
+- エンドポイント: `POST /invocations`、`GET /ping`
+- ランタイム: Python 3.13、Linux arm64
+- 配布方式: [direct code deployment（CodeZip）](https://aws.amazon.com/blogs/machine-learning/iterate-faster-with-amazon-bedrock-agentcore-runtime-direct-code-deployment/)
+  — zip を S3 に置く方式で、Docker は不要
+- 許可されるカスタムヘッダー: `X-Role-Names`、
+  `X-Amzn-Bedrock-AgentCore-Runtime-Custom-UserId`（`amplify/agent/resource.ts` の
+  `requestHeaderAllowlist`）
 
-### Build Types
+Runtime に渡される環境変数（`ROLE_CONFIG_TABLE_NAME` など）は CDK が設定します。
+ローカル実行時のみ `.env.local` で指定できます（`.env.example` を参照）。
 
-- **CodeZip**: Python source packaged as a zip and deployed directly to AgentCore Runtime
-- **Container**: Docker image built via CodeBuild (ARM64), pushed to ECR, and deployed to AgentCore Runtime
-
-## Documentation
-
-- [AgentCore CLI](https://github.com/aws/agentcore-cli)
-- [AgentCore CDK Constructs](https://github.com/aws/agentcore-l3-cdk-constructs)
-- [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/)
+> **`Dockerfile` について**: 現構成では使いません。配布パッケージが 250MB（CodeZip の
+> 上限）を超えて Container ビルドに切り替える必要が出たときの参照用に残しています。
+> その場合は AgentCore CLI（`@aws/agentcore`）によるデプロイに戻す形になります。

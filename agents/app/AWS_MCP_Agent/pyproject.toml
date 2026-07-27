@@ -28,3 +28,13 @@ dev = [
     "hypothesis>=6.155.6",
     "pytest>=9.1.1",
 ]
+
+# `.build/` は scripts/build-agent-package.sh が生成する配布用パッケージで、
+# サードパーティの依存を展開したものが入る。自分のコードではないため、
+# lint とテストの対象から外す（除外しないと ruff が 1000 件以上の指摘を出し、
+# pytest も依存側のテストを収集してしまう）。
+[tool.ruff]
+extend-exclude = [".build", ".venv"]
+
+[tool.pytest.ini_options]
+norecursedirs = [".build", ".venv", "__pycache__"]

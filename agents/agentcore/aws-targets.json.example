@@ -1,8 +1,0 @@
-[
-  {
-    "name": "default",
-    "description": "Default target",
-    "account": "<YOUR_AWS_ACCOUNT_ID>",
-    "region": "<YOUR_REGION>"
-  }
-]
