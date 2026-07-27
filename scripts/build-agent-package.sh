@@ -22,7 +22,7 @@ set -euo pipefail
 
 AGENT_DIR="agents/app/AWS_MCP_Agent"
 BUILD_DIR="${AGENT_DIR}/.build"
-PYTHON_VERSION="3.13"
+TARGET_PYTHON_VERSION="3.13"
 MAX_SIZE_MB=250
 
 if [[ ! -d "${AGENT_DIR}" ]]; then
@@ -30,36 +30,43 @@ if [[ ! -d "${AGENT_DIR}" ]]; then
   exit 1
 fi
 
+# ホスト側に必要なのは「pip が動く Python 3」だけである点に注意。
+# `--python-version` / `--platform` は pip のフラグ（ダウンロードする wheel の
+# 選択条件）であって、このスクリプトを実行するインタープリターのバージョンとは
+# 無関係。ホストの Python が 3.9 でも Python 3.13 / arm64 向けの wheel を集められる。
+# Amplify Hosting のビルド環境で動かす前提のため、要求はできるだけ低く保つ。
 PY="${PYTHON:-python3}"
 if ! command -v "${PY}" >/dev/null 2>&1; then
   echo "エラー: python3 が見つかりません。" >&2
   exit 1
 fi
+if ! "${PY}" -m pip --version >/dev/null 2>&1; then
+  echo "エラー: ${PY} で pip が使えません（python3 -m pip --version が失敗）。" >&2
+  exit 1
+fi
 
-echo "==> 依存関係を Linux arm64 向けに展開します（Python ${PYTHON_VERSION}）"
+echo "==> ホストの Python: $("${PY}" --version 2>&1) / $("${PY}" -m pip --version 2>&1 | cut -d' ' -f1-2)"
+echo "==> 依存関係を Linux arm64 / Python ${TARGET_PYTHON_VERSION} 向けに展開します"
 rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}"
 
 # pyproject.toml の [project.dependencies] を requirements 形式で書き出す。
-# uv / pip のどちらでも読める形にするため、いったんテキストに落としてから渡す。
+#
+# TOML パーサー（tomllib）を使わないのは、tomllib が Python 3.11 以上でしか
+# 使えず、ホスト Python のバージョン要求を上げてしまうため。依存の記述は
+# `    "name >= 1.2.3",` という単純な 1 行 1 依存の形に限られているので、
+# sed で `[project]` の `dependencies = [` から `]` までを切り出す。
 REQ_FILE="$(mktemp)"
 trap 'rm -f "${REQ_FILE}"' EXIT
-"${PY}" - "${AGENT_DIR}/pyproject.toml" > "${REQ_FILE}" <<'PY'
-import re
-import sys
+sed -n '/^dependencies = \[/,/^\]/p' "${AGENT_DIR}/pyproject.toml" \
+  | sed -e '1d' -e '$d' \
+  | sed -e 's/^[[:space:]]*"//' -e 's/",*[[:space:]]*$//' -e 's/[[:space:]]//g' \
+  | grep -v '^$' > "${REQ_FILE}"
 
-try:
-    import tomllib
-except ModuleNotFoundError:  # Python 3.10 以前
-    print("エラー: tomllib が使えません。Python 3.11 以上で実行してください。", file=sys.stderr)
-    raise SystemExit(1)
-
-with open(sys.argv[1], "rb") as f:
-    data = tomllib.load(f)
-
-for dep in data["project"]["dependencies"]:
-    print(re.sub(r"\s+", "", dep))
-PY
+if [[ ! -s "${REQ_FILE}" ]]; then
+  echo "エラー: ${AGENT_DIR}/pyproject.toml から依存を読み取れませんでした。" >&2
+  exit 1
+fi
 
 echo "--- 対象の依存 ---"
 cat "${REQ_FILE}"
@@ -71,7 +78,7 @@ echo "------------------"
   --platform manylinux2014_aarch64 \
   --platform manylinux_2_17_aarch64 \
   --platform manylinux_2_28_aarch64 \
-  --python-version "${PYTHON_VERSION}" \
+  --python-version "${TARGET_PYTHON_VERSION}" \
   --only-binary=:all: \
   --quiet
 

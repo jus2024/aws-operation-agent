@@ -26,7 +26,7 @@
  *   インストール済みバージョンでは L1（`CfnRuntime` / `CfnMemory`）のみのため、
  *   ここでは L1 を直接使っている。
  */
-import { ArnFormat, Names, Stack } from "aws-cdk-lib";
+import { ArnFormat, Names, RemovalPolicy, Stack } from "aws-cdk-lib";
 import * as bedrockagentcore from "aws-cdk-lib/aws-bedrockagentcore";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3assets from "aws-cdk-lib/aws-s3-assets";
@@ -69,6 +69,40 @@ export interface AgentCoreResources {
   readonly memoryArn: string;
 }
 
+/**
+ * リソース名に付ける環境サフィックスを、Amplify のバックエンド識別子から作る。
+ *
+ * AgentCore の Runtime 名 / Memory 名はアカウント・リージョン単位で一意である
+ * 必要があり、sandbox・`develop`・`main` が同一アカウントに共存しうるため、
+ * 環境ごとに異なる名前にしないと 2 つ目のデプロイが失敗する。
+ *
+ * `Names.uniqueId` のハッシュ（例 `ox9b95037cd6`）でも一意性は満たせるが、
+ * CloudWatch Logs のロググループ名やコスト分析でどの環境の Runtime なのかが
+ * 読み取れない。Amplify は CDK コンテキストにバックエンド識別子を入れている
+ * （`@aws-amplify/platform-core` の CDKContextKey）ので、そこから
+ * `main_branch` / `alice_sandbox` のような読める名前を作る。
+ *
+ * 使える文字は英数字とアンダースコアのみ。ハイフン等はアンダースコアに寄せ、
+ * Runtime 名の 48 文字制限に収まるよう切り詰める。
+ *
+ * 注意: このサフィックスが変わると Runtime と Memory は「別のリソース」になり
+ * 置き換えが発生する（Memory の置き換えは会話履歴の断絶を意味する）。
+ * 命名規則は本番の初回デプロイより前に確定させること。
+ */
+function environmentSuffix(scope: Construct): string {
+  const sanitize = (value: string) => value.replace(/[^A-Za-z0-9]/g, "_");
+
+  const backendName = scope.node.tryGetContext("amplify-backend-name");
+  const backendType = scope.node.tryGetContext("amplify-backend-type");
+
+  if (typeof backendName === "string" && backendName && typeof backendType === "string" && backendType) {
+    return `${sanitize(backendName)}_${sanitize(backendType)}`.slice(0, 24);
+  }
+
+  // コンテキストが無い場合（Amplify 以外からの synth など）は一意性のみを担保する。
+  return Names.uniqueId(scope).slice(-12);
+}
+
 export interface CreateAgentCoreResourcesProps {
   /**
    * Role_Entry を保持する RoleConfig テーブル（Amplify Data が生成した L2）。
@@ -105,9 +139,7 @@ export function createAgentCoreResources(
     );
   }
 
-  // Runtime 名 / Memory 名は英数字とアンダースコアのみ。uniqueId には英数字以外が
-  // 入らないが、長さ制限（Runtime 名は 48 文字）に収めるため後方 12 文字を使う。
-  const suffix = Names.uniqueId(scope).slice(-12);
+  const suffix = environmentSuffix(scope);
 
   // --- AgentCore Memory ---------------------------------------------------
   // 会話の発言本文の唯一の正。actor_id（Cognito sub）と session_id でスコープされる。
@@ -129,6 +161,24 @@ export function createAgentCoreResources(
       },
     ],
   });
+
+  // Memory は会話履歴（発言本文の唯一の正）を保持するため、スタックの削除・
+  // ロールバックで消さない。
+  //
+  // RETAIN を選ぶ理由:
+  // - Amplify アプリを削除したときに会話履歴が失われるのは取り返しがつかない。
+  //   Runtime はコードから作り直せるが、Memory の中身は作り直せない。
+  // - Memory の作成には数分かかる。同じスタック内の他のリソースが先に失敗すると
+  //   ロールバックが始まるが、`CREATING` 中の Memory は削除できないため
+  //   `ROLLBACK_FAILED` でスタックが詰まる（実際に踏んだ）。RETAIN なら削除を
+  //   試みないのでこの詰まりも起きない。
+  //
+  // 代償: 初回作成が失敗した場合、Memory が孤児として残る。同じ名前で再作成
+  // しようとすると衝突するため、再試行の前に孤児を手動で削除する必要がある
+  // （`aws bedrock-agentcore-control list-memories` で確認して delete-memory）。
+  // 起こるのは初回作成時のみで、エラーメッセージも明確なため、履歴消失のリスクと
+  // 引き換えにこちらを受け入れる。
+  memory.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
   // --- Runtime の実行ロール ------------------------------------------------
   // 信頼ポリシーは AgentCore Runtime のドキュメントに従い、SourceAccount /
