@@ -43,6 +43,10 @@ import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+import sys
+from pathlib import Path
+
+import mcp_proxy_for_aws
 from mcp import StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
@@ -108,6 +112,19 @@ def build_gateway_client(gateway_url: str, auth_token: str = "") -> MCPClient:
     )
 
 
+#: `python -m` で起動する mcp-proxy-for-aws のモジュール名。
+MCP_PROXY_MODULE = "mcp_proxy_for_aws.server"
+
+
+def _proxy_package_root() -> str:
+    """`mcp_proxy_for_aws` パッケージを import できるディレクトリを返す。
+
+    `mcp_proxy_for_aws/__init__.py` の 2 つ上（= サイトパッケージ相当の
+    ディレクトリ）が、子プロセスの PYTHONPATH に必要な値になる。
+    """
+    return str(Path(mcp_proxy_for_aws.__file__).resolve().parent.parent)
+
+
 def build_aws_mcp_proxy_transport_callable(
     endpoint: str = "https://aws-mcp.us-east-1.api.aws/mcp",
     region: str = "us-east-1",
@@ -140,11 +157,44 @@ def build_aws_mcp_proxy_transport_callable(
         A zero-argument callable that returns a new stdio transport each
         time it is invoked (i.e. each time the MCPClient (re)starts).
     """
+    # `mcp-proxy-for-aws` の console script（実行可能スクリプト）ではなく、
+    # `sys.executable -m mcp_proxy_for_aws.server` で起動する。
+    #
+    # console script に依存できない理由（AgentCore Runtime の direct code
+    # deployment / CodeZip で判明）:
+    # 1. PATH に載らない。Container ビルドでは `uv sync` が作る `.venv/bin` が
+    #    PATH に入るが、CodeZip では `pip install --target` が置く `bin/` は
+    #    PATH に含まれず、`FileNotFoundError: 'mcp-proxy-for-aws'` になる。
+    # 2. shebang がビルドマシンの Python を指す。`pip install --target` が生成する
+    #    console script の 1 行目はインストールを実行したインタープリターの絶対パス
+    #    （例: `#!/opt/homebrew/opt/python@3.14/bin/python3.14`）になるため、
+    #    PATH を通しても実行環境では解決できない。
+    #
+    # `mcp_proxy_for_aws.server` は `if __name__ == "__main__"` を持つので
+    # `-m` で起動できる。`sys.executable` は Container ビルドでは venv の
+    # Python、CodeZip ではマネージドランタイムの Python に解決されるため、
+    # どちらの配布方式でも同じコードで動く。
+    #
+    # PYTHONPATH を明示するのは、`-m` の解決が子プロセスの sys.path に依存し、
+    # `stdio_client` が渡す `get_default_environment()` に PYTHONPATH が
+    # 含まれないため（CodeZip ではカレントディレクトリに依存させたくない）。
+    launch_env: dict[str, str] = {"PYTHONPATH": _proxy_package_root()}
+    if env:
+        launch_env.update(env)
+
     return lambda: stdio_client(
         StdioServerParameters(
-            command="mcp-proxy-for-aws",
-            args=[endpoint, "--service", "aws-mcp", "--region", region],
-            env=env,
+            command=sys.executable,
+            args=[
+                "-m",
+                MCP_PROXY_MODULE,
+                endpoint,
+                "--service",
+                "aws-mcp",
+                "--region",
+                region,
+            ],
+            env=launch_env,
         )
     )
 

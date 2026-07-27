@@ -113,9 +113,13 @@ export function createAgentCoreResources(
   // 会話の発言本文の唯一の正。actor_id（Cognito sub）と session_id でスコープされる。
   // 保持期間 365 日・長期記憶（SEMANTIC）有効は、従来 agentcore.json の
   // `memories` に定義していた設定をそのまま移したもの。
+  // description は ASCII のみにする。IAM は description に
+  // `[\u0009\u000A\u000D\u0020-\u007E\u00A1-\u00FF]`（実質 Latin-1）しか許さず、
+  // 日本語を入れるとデプロイ時に 400 で失敗する（synth では検出できない）。
+  // AgentCore 側は日本語を受け付けたが、リソース間で揃える方が事故が少ない。
   const memory = new bedrockagentcore.CfnMemory(scope, "AwsMcpAgentMemory", {
     name: `AWS_MCP_AgentMemory_${suffix}`,
-    description: "AWS MCP エージェントの会話履歴（発言本文の唯一の正）",
+    description: "Conversation history for the AWS MCP agent (source of truth)",
     eventExpiryDuration: 365,
     memoryStrategies: [
       {
@@ -142,7 +146,8 @@ export function createAgentCoreResources(
         },
       },
     }),
-    description: `AgentCore Runtime ${runtimeName} の実行ロール`,
+    // ASCII のみ（上記 CfnMemory のコメント参照）。
+    description: `Execution role for AgentCore Runtime ${runtimeName}`,
   });
 
   // CloudWatch Logs / X-Ray / メトリクス（direct deploy 実行ロールの標準セット）。
@@ -265,7 +270,7 @@ export function createAgentCoreResources(
 
   const runtime = new bedrockagentcore.CfnRuntime(scope, "AwsMcpAgentRuntime", {
     agentRuntimeName: runtimeName,
-    description: "AWS MCP エージェント（AG-UI / Strands Agents）",
+    description: "AWS MCP agent (AG-UI / Strands Agents)",
     roleArn: executionRole.roleArn,
     agentRuntimeArtifact: {
       codeConfiguration: {

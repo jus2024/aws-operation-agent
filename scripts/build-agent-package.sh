@@ -90,6 +90,21 @@ echo "==> エージェントのソースをコピーします"
   --exclude '.dockerignore' \
   "${AGENT_DIR}/" "${BUILD_DIR}/"
 
+# Python のバイトコードキャッシュを除去する。
+#
+# AgentCore Runtime は zip に .pyc / __pycache__ が含まれていると
+# 「Your artifact contains Python cache files that are incompatible with the
+# target runtime」で CREATE_FAILED になる。ビルドしたマシンの Python
+# バージョン向けにコンパイルされたキャッシュが実行環境と一致しないため。
+#
+# 自分でコンパイルしていなくても発生する: 一部の wheel が .pyc を同梱しており、
+# pip で展開した時点で数千件入ってくる（除去するとサイズも減る）。
+echo "==> Python のバイトコードキャッシュを除去します"
+CACHE_DIRS=$(find "${BUILD_DIR}" -type d -name '__pycache__' | wc -l | tr -d ' ')
+find "${BUILD_DIR}" -type d -name '__pycache__' -prune -exec rm -rf {} +
+find "${BUILD_DIR}" -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+echo "    __pycache__ を ${CACHE_DIRS} 件削除しました"
+
 UNPACKED_MB=$(du -sm "${BUILD_DIR}" | cut -f1)
 echo
 echo "==> 完了: ${BUILD_DIR}"
