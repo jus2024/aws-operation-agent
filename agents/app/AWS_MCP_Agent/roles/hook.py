@@ -1,9 +1,11 @@
 """BeforeToolCallEvent hook: per-tool-call Role_Entry selection + lazy credentialed-subprocess rebuild.
 
-This module replaces the deprecated `profile/injection.py` (Multi_Profile_Mode
+This module replaced the former `profile/injection.py` (Multi_Profile_Mode
 `aws_profile` parameter injection, which does not work in the AgentCore
 Runtime MicroVM/MMDS environment -- see design.md "New architecture
-overview"). It implements the single shared Strands hook that is registered
+overview"). That module has since been deleted along with the unused
+`.aws/config` profile definitions it depended on.
+It implements the single shared Strands hook that is registered
 once on the template Agent (see main.py) and therefore runs for every tool
 call in every session.
 
@@ -86,7 +88,7 @@ current_session_context: contextvars.ContextVar[SessionContext | None] = context
 )
 """Request-scoped SessionContext, set by the FastAPI /invocations handler.
 
-Moved here from the deprecated `profile/injection.py` (Requirement 9.2, 9.3).
+Moved here from the removed `profile/injection.py` (Requirement 9.2, 9.3).
 Defaults to None so that this hook degrades safely (treats the Role_Set as
 empty, which rejects every AWS-credential-requiring tool call via
 `_reject_empty_role_set`) if it is ever invoked outside of a request that
@@ -98,7 +100,7 @@ AWS_CREDENTIAL_TOOLS = frozenset({"call_aws", "run_script", "get_presigned_url",
 present in the process environment for the `mcp-proxy-for-aws` subprocess to
 sign requests with (Requirement 2.1).
 
-Unlike the deprecated `profile/injection.py` AUTH_REQUIRING_TOOLS set, this
+Unlike the removed `profile/injection.py` AUTH_REQUIRING_TOOLS set, this
 set intentionally excludes `suggest_aws_commands` -- that tool was specific
 to Multi_Profile_Mode schema inspection and is no longer relevant under the
 direct STS AssumeRole approach.
