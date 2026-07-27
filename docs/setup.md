@@ -114,10 +114,11 @@ agents/
 ├── app/
 │   └── AWS_MCP_Agent/           # AWS MCP エージェント
 │       ├── main.py              # AG-UI サーバー（FastAPI + ag-ui-strands）
-│       ├── .aws/config          # ロール切り替え用の AWS CLI プロファイル
 │       ├── model/               # モデルローダー
 │       ├── prompts/             # システムプロンプト
-│       ├── roles/ scope/        # Role_Set 選択・操作スコープ判定
+│       ├── roles/               # Role_Set 選択・AssumeRole・認証情報注入
+│       ├── scope/               # 操作スコープ判定
+│       ├── gateway/             # AWS MCP Server への接続（stdio プロキシ）
 │       ├── memory/              # AgentCore Memory 連携
 │       ├── pyproject.toml       # Python 依存関係
 │       ├── Dockerfile           # Container ビルド用
@@ -149,7 +150,7 @@ agents/
 
 | プレースホルダ | 書き換える場所 | 入れる値 / 取得方法 |
 |---------------|---------------|--------------------|
-| `<YOUR_AWS_ACCOUNT_ID>` | `agents/agentcore/aws-targets.json`（`.example` からコピー）、`agents/agentcore/cdk/lib/cdk-stack.ts`（`MCP_AGENT_ASSUMABLE_ROLE_ARNS` / `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`）、`agents/app/AWS_MCP_Agent/.aws/config` | デプロイ先の AWS アカウント ID（12桁）。`aws sts get-caller-identity --query Account --output text` |
+| `<YOUR_AWS_ACCOUNT_ID>` | `agents/agentcore/aws-targets.json`（`.example` からコピー）、`agents/agentcore/cdk/lib/cdk-stack.ts`（`MCP_AGENT_ASSUMABLE_ROLE_ARNS` / `ROLE_CONFIG_TABLE_ARN_BY_RUNTIME`） | デプロイ先の AWS アカウント ID（12桁）。`aws sts get-caller-identity --query Account --output text` |
 | `<YOUR_REGION>` | `agents/agentcore/aws-targets.json` | デプロイ先リージョン（例: `us-west-2`）。`cdk-stack.ts` の DynamoDB ARN にもリージョンが直接書かれているため、`us-west-2` 以外を使う場合はそちらも合わせて変更する |
 | `<APPSYNC_API_ID>` | `agents/agentcore/agentcore.json`（`AWS_MCP_Agent` の `ROLE_CONFIG_TABLE_NAME`）、`cdk-stack.ts`（`ROLE_CONFIG_TABLE_ARN_BY_RUNTIME.AWS_MCP_Agent`） | デプロイした Amplify バックエンドが生成した RoleConfig テーブル名 `RoleConfig-xxxxxxxx-NONE` の中央部分（AppSync API の ID）。AWS コンソール → DynamoDB → テーブル一覧で `RoleConfig-` から始まるテーブルを探し、`amplify:branch-name` タグで目的の環境のものかを確認する |
 | （AgentCore Memory ID） | 環境変数 `AGENTCORE_MEMORY_ID`（ローカルは `.env.local`、Amplify Hosting はコンソールの環境変数） | `agentcore status` の Memory リソースに表示される ID（例: `agents_AWS_MCP_AgentMemory-XXXXXXXXXX`）。ソースコードに書く値ではない |
