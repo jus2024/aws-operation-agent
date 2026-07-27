@@ -17,7 +17,6 @@ dependencies = [
     "fastapi >= 0.115.12",
     "mcp-proxy-for-aws >= 1.1.0",
     "strands-agents >= 1.15.0",
-    "strands-agents-tools >= 0.2.14",
     "uvicorn >= 0.34.3",
 ]
 
