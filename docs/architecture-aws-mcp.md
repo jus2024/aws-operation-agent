@@ -97,6 +97,7 @@ Runtime 実行ロールの ARN を追加する作業は手動です（[docs/depl
 |------|---------|-----|------|
 | `ROLE_CONFIG_TABLE_NAME` | `amplify/agent/resource.ts`（CDK が実テーブル名を解決） | 自動 | ロール定義テーブル名 |
 | `ROLE_CONFIG_CACHE_TTL_SECONDS` | `amplify/agent/resource.ts` | `30` | ロール定義のキャッシュ TTL |
+| `AGENTCORE_MEMORY_ID` | `amplify/agent/resource.ts`（CDK が同一スタックの Memory から解決） | 自動 | 会話イベントの記録先。未設定だと `memory/session.py` が Memory を使わず、履歴復元が空になる |
 | `AWS_MCP_ENDPOINT` | 既定は `agents/app/AWS_MCP_Agent/main.py` のコード内 | `https://aws-mcp.us-east-1.api.aws/mcp` | AWS MCP エンドポイント URL。上書きする場合は `resource.ts` の `environmentVariables` に追加する |
 | `AWS_MCP_REGION` | 同上 | `us-east-1` | SigV4 署名に使用するリージョン |
 
