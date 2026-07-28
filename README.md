@@ -341,9 +341,11 @@ Amplify コンソール →「ホスティング」→「環境変数」:
 > ダイアログが一瞬開いてすぐ閉じる、という分かりにくい症状になります）。
 #### コンピューティングロールへの権限追加について
 
-「コンピューティングロール」は Amplify Hosting がアプリ単位で自動作成する IAM ロール
-（デフォルト名 `AmplifySSRComputeRole`）で、SSR Lambda（Next.js の Route Handler、
-現在は `/api/roles` のみ）が実行時に使う実行ロールです。これは **`amplify/backend.ts` の
+「コンピューティングロール」は Amplify Hosting のアプリ単位で設定する IAM ロール
+（慣例的な名前は `AmplifySSRComputeRole`）で、SSR Lambda（Next.js の Route Handler、
+現在は `/api/roles` のみ）が実行時に使う実行ロールです。新規に作成したアプリでは
+未設定のことがあり、その場合は自分で IAM ロールを作成してアプリに割り当てます
+（信頼するサービスは `amplify.amazonaws.com`）。これは **`amplify/backend.ts` の
 CDK スタック（Cognito / AppSync / DynamoDB / `copilotkitStreamingRelay` を定義する
 バックエンドスタック）には含まれません**。Amplify Hosting サービス側が管理するアプリ
 レベルのリソースであり、CDK からは参照・変更できないため、権限の追加は AWS コンソール
