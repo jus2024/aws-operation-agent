@@ -17,7 +17,7 @@ This tool requires no AWS credentials, so it is intentionally NOT part of
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 
 from strands import tool
@@ -170,7 +170,7 @@ def time_ago(
             "content": [{"text": _PARSE_GUIDANCE}],
         }
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     delta_seconds = (now - utc).total_seconds()
     phrase = format_relative(delta_seconds)
     jst = utc.astimezone(JST)

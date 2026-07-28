@@ -50,8 +50,10 @@ curl -N -X POST http://localhost:8080/invocations \
 ```bash
 cd app/AWS_MCP_Agent
 uv run pytest
-uvx ruff check --select F .
+uvx ruff check .
 ```
+
+適用するルールセットは `pyproject.toml` の `[tool.ruff.lint]` の `select` で固定しています。
 
 `.build/` はサードパーティの依存を展開したビルド生成物なので、`pyproject.toml` の
 `[tool.ruff]` と `[tool.pytest.ini_options]` で対象外にしています。

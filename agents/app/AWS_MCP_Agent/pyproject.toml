@@ -36,5 +36,17 @@ dev = [
 [tool.ruff]
 extend-exclude = [".build", ".venv"]
 
+# 適用するルールセットを明示する。未指定だと ruff のバージョンによって選択される
+# ルールが変わり、コードを変えていないのに指摘件数が動く。
+# - E4/E7/E9, F: 実バグに直結するもの（未定義名、未使用 import、構文的な誤り）
+# - I: import 順の統一
+# - UP: 対象 Python バージョン（3.12+）で不要になった古い書き方の除去
+# - B: よくあるバグパターン（可変デフォルト引数、ループ変数の束縛ミス等）
+# スタイル系（E501 行長、TRY、SIM、RUF）は入れていない。特に RUF001/002/003 は
+# 日本語のコメントと docstring を「曖昧な Unicode」として数百件報告するため、
+# このリポジトリでは実質ノイズになる。
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
 [tool.pytest.ini_options]
 norecursedirs = [".build", ".venv", "__pycache__"]

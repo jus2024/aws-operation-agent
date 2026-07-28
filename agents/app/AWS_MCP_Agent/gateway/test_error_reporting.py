@@ -21,7 +21,6 @@ from gateway.error_classification import (
     classify_error,
 )
 
-
 # ---------------------------------------------------------------------------
 # Requirement 3.2: Connection failure reporting
 # ---------------------------------------------------------------------------

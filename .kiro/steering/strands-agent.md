@@ -26,7 +26,7 @@ fileMatchPattern: "agents/**/*"
 
 - Python と依存の管理は uv を使用する（`uv sync --group dev --python 3.13`）
 - ローカル起動: `LOCAL_DEV=1 uv run uvicorn main:app --host 0.0.0.0 --port 8080`
-- テスト: `uv run pytest` / lint: `uvx ruff check --select F .`
+- テスト: `uv run pytest` / lint: `uvx ruff check .`（ルールセットは pyproject.toml で固定済み）
 - 依存を追加したら `uv.lock` を更新する（配布用パッケージのビルドがこのロックを使うため）
 - `agents/app/AWS_MCP_Agent/.build/` はビルド生成物。lint / テストの対象外（pyproject.toml で除外済み）
 

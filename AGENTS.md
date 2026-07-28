@@ -64,7 +64,7 @@
 - Web アプリ: `.github/workflows/ci.yml`（lint + 型チェック）
 - エージェント: CI ワークフローは未設定。`ci.yml` は `agents/**` を `paths-ignore` しているため、
   エージェント側の検証は `agents/app/AWS_MCP_Agent/` でローカル実行する
-  （`uv run pytest` / `uvx ruff check --select F .`）
+  （`uv run pytest` / `uvx ruff check .`）
 - デプロイ: Amplify Hosting（push → 自動ビルド。バックエンド・フロントエンド・エージェントを一括）
 
 ## 成果物の方針

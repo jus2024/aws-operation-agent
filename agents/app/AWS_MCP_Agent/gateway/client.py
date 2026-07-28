@@ -40,11 +40,10 @@ so the caller can report an unreachable AWS MCP Server / MCP_Proxy to the user.
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
-from typing import TYPE_CHECKING
-
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import mcp_proxy_for_aws
 from mcp import StdioServerParameters
@@ -129,7 +128,7 @@ def build_aws_mcp_proxy_transport_callable(
     endpoint: str = "https://aws-mcp.us-east-1.api.aws/mcp",
     region: str = "us-east-1",
     env: dict[str, str] | None = None,
-) -> Callable[[], "MCPTransport"]:
+) -> Callable[[], MCPTransport]:
     """Build the `transport_callable` used by an mcp-proxy-for-aws-backed MCPClient.
 
     Extracted from `build_aws_mcp_proxy_client` so that `gateway/manager.py`

@@ -15,7 +15,7 @@ deterministic and trivially testable offline. It never uses
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 #: Epoch values with an absolute magnitude at or above this threshold are
 #: treated as milliseconds; smaller ones as seconds. 1e12 seconds is far in
@@ -106,7 +106,7 @@ def _epoch_to_utc(epoch: float, unit: str | None) -> datetime:
         seconds = epoch
 
     try:
-        return datetime.fromtimestamp(seconds, tz=timezone.utc)
+        return datetime.fromtimestamp(seconds, tz=UTC)
     except (OverflowError, OSError, ValueError) as exc:
         raise ValueError(f"Epoch value {epoch!r} is out of range") from exc
 
@@ -133,5 +133,5 @@ def _iso_to_utc(text: str) -> datetime:
 
     if parsed.tzinfo is None:
         # Naive timestamp: AWS timestamps are UTC, so assume UTC.
-        return parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
