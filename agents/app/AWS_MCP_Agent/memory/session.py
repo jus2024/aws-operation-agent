@@ -1,14 +1,15 @@
 import os
 import uuid
-from typing import Optional
 
 from bedrock_agentcore.memory.integrations.strands.config import AgentCoreMemoryConfig
-from bedrock_agentcore.memory.integrations.strands.session_manager import AgentCoreMemorySessionManager
+from bedrock_agentcore.memory.integrations.strands.session_manager import (
+    AgentCoreMemorySessionManager,
+)
 
 MEMORY_ID = os.getenv("MEMORY_AWS_MCP_AGENTMEMORY_ID")
 REGION = os.getenv("AWS_REGION")
 
-def get_memory_session_manager(session_id: Optional[str], actor_id: str) -> Optional[AgentCoreMemorySessionManager]:
+def get_memory_session_manager(session_id: str | None, actor_id: str) -> AgentCoreMemorySessionManager | None:
     if not MEMORY_ID:
         return None
 

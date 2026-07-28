@@ -50,32 +50,37 @@ with that role's credentials (see roles/hook.py and gateway/manager.py).
 Requirements: 1.1, 2.6, 8.3
 """
 
-import os
 import logging
+import os
 
 if os.getenv("LOCAL_DEV") == "1":
     os.environ["OTEL_SDK_DISABLED"] = "true"
 
 import uvicorn
+from ag_ui.core import RunAgentInput
+from ag_ui.encoder import EventEncoder
+from ag_ui_strands import StrandsAgent, StrandsAgentConfig
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from ag_ui.core import RunAgentInput
-from ag_ui.encoder import EventEncoder
 from strands import Agent
-from ag_ui_strands import StrandsAgent, StrandsAgentConfig
 
-from model.load import load_model
-from memory.session import get_memory_session_manager
-from gateway.manager import McpClientManager
-from context.session_context import extract_session_context
-from roles.hook import AWS_CREDENTIAL_TOOLS, SessionScopeAndRoleHook, _strip_gateway_prefix, current_session_context
-from roles.tool_schema import RoleSelectingToolWrapper
-from prompts.system import build_system_prompt
-from visualization.tool import emit_visualization
-from clock.tool import convert_to_jst, get_current_datetime, time_ago
-from units.tool import humanize_bytes
 from calc.tool import calculate
+from clock.tool import convert_to_jst, get_current_datetime, time_ago
+from context.session_context import extract_session_context
+from gateway.manager import McpClientManager
+from memory.session import get_memory_session_manager
+from model.load import load_model
+from prompts.system import build_system_prompt
+from roles.hook import (
+    AWS_CREDENTIAL_TOOLS,
+    SessionScopeAndRoleHook,
+    _strip_gateway_prefix,
+    current_session_context,
+)
+from roles.tool_schema import RoleSelectingToolWrapper
+from units.tool import humanize_bytes
+from visualization.tool import emit_visualization
 
 logger = logging.getLogger(__name__)
 

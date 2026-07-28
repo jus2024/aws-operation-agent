@@ -23,7 +23,7 @@ from __future__ import annotations
 import ast
 import math
 import operator
-from typing import Callable
+from collections.abc import Callable
 
 #: Maximum accepted expression length (characters). Longer input is rejected
 #: outright to bound parsing/evaluation cost.

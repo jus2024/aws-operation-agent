@@ -26,7 +26,7 @@ LOCAL_DEV=1 uv run uvicorn main:app --host 0.0.0.0 --port 8080
 
 ```bash
 uv run pytest
-uvx ruff check --select F .
+uvx ruff check .
 ```
 
 ## デプロイ

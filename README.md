@@ -673,16 +673,16 @@ AgentCore Runtime・中継 Lambda・Runtime 実行ロールはバックエンド
 cd agents/app/AWS_MCP_Agent
 uv sync --group dev --python 3.13
 uv run pytest                      # 単体テスト（dev 依存グループに含まれる）
-uvx ruff check --select F .         # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
+uvx ruff check .                   # lint（ruff は依存に含めていないため uvx / pipx 経由で実行）
 ```
 
-> **ruff の設定について**: `pyproject.toml` の `[tool.ruff]` には除外パス
-> （`.build` / `.venv`）のみを設定しており、**適用するルールセットは指定していません**。
-> そのため `uvx ruff check .`（ルール無指定）は ruff のバージョンによって選択される
-> ルールが変わり、既存コードに対してスタイル系の指摘（`UP` / `RUF` / `TRY` / `E501` など）が
-> 数十件出ます。いずれも動作に影響しないため未対応です。回帰の検出には未定義名・未使用
-> import を見る `--select F` を使ってください。ルールセットを固定したい場合は
-> `[tool.ruff.lint]` の `select` を追加してください。
+> **ruff の設定について**: `pyproject.toml` の `[tool.ruff.lint]` で適用するルールセットを
+> `["E4", "E7", "E9", "F", "I", "UP", "B"]` に固定しています（実バグに直結するもの、
+> import 順、対象 Python バージョンで不要になった書き方、よくあるバグパターン）。
+> ルールを明示しているため、ruff のバージョンが上がっても指摘件数は動きません。
+> スタイル系（`E501` 行長、`TRY`、`SIM`、`RUF`）は入れていません。特に `RUF001/002/003` は
+> 日本語のコメントと docstring を「曖昧な Unicode」として数百件報告するため、
+> このリポジトリでは実質ノイズになります。
 
 ## サンプルの除去
 

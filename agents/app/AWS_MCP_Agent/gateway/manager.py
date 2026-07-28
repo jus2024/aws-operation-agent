@@ -79,9 +79,13 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from gateway.client import build_aws_mcp_proxy_client, build_aws_mcp_proxy_transport_callable
-from roles.sts import assume_role
 from strands.tools.mcp import MCPClient
+
+from gateway.client import (
+    build_aws_mcp_proxy_client,
+    build_aws_mcp_proxy_transport_callable,
+)
+from roles.sts import assume_role
 
 logger = logging.getLogger(__name__)
 
