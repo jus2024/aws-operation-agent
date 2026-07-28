@@ -83,19 +83,26 @@ uv pip install \
   -r "${REQ_FILE}"
 
 echo "==> エージェントのソースをコピーします"
+#
+# rsync ではなく tar を使う理由:
+# rsync は POSIX 標準ではなく、Amplify Hosting のビルドイメージ（AL2023）には
+# 含まれていない（`rsync: command not found` で exit 127 になる）。tar は確実に
+# 存在し、--exclude で同等の除外ができる。
+#
 # テスト・キャッシュ・ローカル仮想環境・ビルド出力自身は除外する。
-rsync -a \
-  --exclude '.build/' \
-  --exclude '.venv/' \
-  --exclude '__pycache__/' \
-  --exclude '.pytest_cache/' \
-  --exclude '.ruff_cache/' \
-  --exclude '.hypothesis/' \
+# `.build/` を除外しないと、コピー先が自分自身に含まれて無限に入れ子になる。
+tar -cf - -C "${AGENT_DIR}" \
+  --exclude '.build' \
+  --exclude '.venv' \
+  --exclude '__pycache__' \
+  --exclude '.pytest_cache' \
+  --exclude '.ruff_cache' \
+  --exclude '.hypothesis' \
   --exclude 'test_*.py' \
   --exclude 'uv.lock' \
   --exclude 'Dockerfile' \
   --exclude '.dockerignore' \
-  "${AGENT_DIR}/" "${BUILD_DIR}/"
+  . | tar -xf - -C "${BUILD_DIR}"
 
 # uv は .pyc を生成しないが、wheel 自身が同梱している場合があるため念のため除去する
 # （AgentCore はキャッシュファイルを含む zip を拒否する）。
