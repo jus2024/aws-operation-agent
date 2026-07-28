@@ -349,6 +349,11 @@ export function createAgentCoreResources(
       // 同一スタック内なので実テーブル名がデプロイ時に解決される。
       ROLE_CONFIG_TABLE_NAME: props.roleConfigTable.tableName,
       ROLE_CONFIG_CACHE_TTL_SECONDS,
+      // Memory ID。これが渡らないと `memory/session.py` の
+      // `get_memory_session_manager()` が None を返し、会話イベントが
+      // 記録されない（履歴復元も空になる）。中継 Lambda 側の
+      // `AGENTCORE_MEMORY_ID` と同じ名前に揃えている。
+      AGENTCORE_MEMORY_ID: memory.attrMemoryId,
     },
   });
 
