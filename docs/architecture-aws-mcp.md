@@ -89,6 +89,38 @@ Runtime 実行ロールの ARN を追加する作業は手動です（[docs/depl
 
 ---
 
+## リージョンの扱い
+
+リージョンはコードにハードコードしていません。2 系統あり、独立しています。
+
+| 対象 | どのリージョンになるか |
+|------|----------------------|
+| Cognito / AppSync / DynamoDB / 中継 Lambda / AgentCore Runtime / Memory | **Amplify アプリのリージョン**。すべて同一スタックに作られる |
+| Bedrock のモデル | 同上（`AWS_REGION` から推論プロファイルのプレフィックスを解決。`us-*` は `us.`、それ以外は `global.`） |
+| AWS MCP エンドポイント | **`us-east-1` 固定**（既定値）。デプロイ先とは無関係 |
+
+中継 Lambda はリージョンを 2 か所で使います。どちらも実行環境の `AWS_REGION`
+（= Amplify のデプロイ先）と Runtime ARN から解決します。
+
+- AgentCore への SigV4 署名リージョン: 送信先ホスト
+  `bedrock-agentcore.<region>.amazonaws.com` から取り出す。ホストは Runtime ARN から
+  組み立てるため、署名リージョンと呼び出し先が食い違わない
+- DynamoDB / AgentCore Memory の SDK クライアント: `AWS_REGION` を使う
+
+AWS MCP エンドポイントを `us-east-1` に固定しているのは、これが AWS MCP という
+サービス自身のエンドポイントであり、デプロイ先とは別物だからです。1 つの
+エンドポイントから全リージョンのリソースを操作できるため、別リージョンに
+デプロイしても変更は不要です。変えたい場合は `AWS_MCP_ENDPOINT` /
+`AWS_MCP_REGION` を `amplify/agent/resource.ts` の `environmentVariables` に
+追加してください。
+
+> **前提**: デプロイ先のリージョンで Amazon Bedrock AgentCore が利用可能である
+> 必要があります（`us-east-1` / `us-west-2` / `ap-northeast-1` / `ap-southeast-2` /
+> `eu-central-1` / `eu-west-1` などで利用可能）。あわせて、そのリージョンで
+> Bedrock のモデルアクセスを有効化してください。
+
+---
+
 ## 環境変数
 
 ### Runtime 環境変数

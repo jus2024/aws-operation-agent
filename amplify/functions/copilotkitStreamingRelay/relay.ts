@@ -31,7 +31,22 @@ import type { LambdaFunctionURLEvent } from "aws-lambda";
  * Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4
  */
 
-export const REGION = "us-west-2";
+/**
+ * この Lambda が動いているリージョン。Lambda 実行環境が必ず設定する
+ * `AWS_REGION` から読む（Amplify Hosting のデプロイ先リージョンと一致する）。
+ *
+ * 以前は `"us-west-2"` をハードコードしていたため、他のリージョンに
+ * デプロイすると次の2つが壊れた。
+ * - AgentCore への SigV4 署名リージョンが呼び出し先ホストと食い違う
+ * - DynamoDB / AgentCore Memory の SDK クライアントが存在しない
+ *   リージョンを向く
+ *
+ * `undefined` になり得る（ローカルのユニットテスト等、Lambda 外での読み込み）。
+ * SDK クライアントに `region: undefined` を渡した場合は SDK 既定の
+ * リージョン解決チェーンにフォールバックするため、`src/app/api/roles/route.ts`
+ * の `new DynamoDBClient({})` と同じ挙動になる。
+ */
+export const REGION = process.env.AWS_REGION ?? process.env.AWS_DEFAULT_REGION;
 
 /**
  * セッションコンテキストヘッダー（X-Role-Names /
@@ -47,13 +62,39 @@ export const sessionHeadersStorage = new AsyncLocalStorage<Record<string, string
 
 /**
  * AgentCore Runtime の Invocation URL を Runtime ARN から組み立てる。
- * route.ts の buildInvocationUrl とロジック変更なし。
+ *
+ * リージョンは ARN の 4 番目のフィールドから取る。ARN にリージョンが
+ * 含まれない場合は、この Lambda 自身のリージョンにフォールバックする
+ * （Runtime は同一スタックに作られるため通常は一致する）。どちらも
+ * 解決できない場合は、`bedrock-agentcore.undefined.amazonaws.com` という
+ * 不正なホストで署名・送信して分かりにくい失敗になるのを避けるため、
+ * その場で例外を投げる。
  */
 export function buildInvocationUrl(runtimeArn: string): string {
   const parts = runtimeArn.split(":");
   const region = parts[3] || REGION;
+  if (!region) {
+    throw new Error(
+      `Cannot resolve region for AgentCore Runtime ARN: ${runtimeArn} (AWS_REGION is also unset)`
+    );
+  }
   const encodedArn = encodeURIComponent(runtimeArn);
   return `https://bedrock-agentcore.${region}.amazonaws.com/runtimes/${encodedArn}/invocations?qualifier=DEFAULT`;
+}
+
+/**
+ * AgentCore のエンドポイントホスト名から SigV4 の署名リージョンを取り出す。
+ *
+ * 署名リージョンは、実際に送信するホスト
+ * （`bedrock-agentcore.<region>.amazonaws.com`）と一致していなければ
+ * `SignatureDoesNotMatch` になる。URL は `buildInvocationUrl` が Runtime ARN
+ * から組み立てるため、ホスト名から取り出すのが最も確実に一致する。
+ *
+ * 想定外のホスト形式だった場合は、この Lambda 自身のリージョンを返す。
+ */
+export function resolveSigningRegion(hostname: string): string | undefined {
+  const match = /^bedrock-agentcore\.([a-z0-9-]+)\.amazonaws\.com$/.exec(hostname);
+  return match?.[1] ?? REGION;
 }
 
 /**
@@ -80,9 +121,19 @@ export async function sigv4Fetch(url: string | URL | Request, init?: RequestInit
     body,
   });
 
+  // 署名リージョンは送信先ホストから導出する（ハードコードしない）。
+  // ホストは buildInvocationUrl が Runtime ARN から作るため、ARN のリージョンと
+  // 署名リージョンが常に一致する。
+  const signingRegion = resolveSigningRegion(targetUrl.hostname);
+  if (!signingRegion) {
+    throw new Error(
+      `Cannot resolve SigV4 signing region for host: ${targetUrl.hostname} (AWS_REGION is also unset)`
+    );
+  }
+
   const signer = new SignatureV4({
     service: "bedrock-agentcore",
-    region: REGION,
+    region: signingRegion,
     credentials: defaultProvider(),
     sha256: Sha256,
   });

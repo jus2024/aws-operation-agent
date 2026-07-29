@@ -118,7 +118,9 @@ export const MEMORY_RESTORE_PATH = "/memory/events";
 // 実行ロールの認証情報チェーン（Lambda 実行ロール）を自動的に使うため、
 // 追加の署名ロジックは不要（IAM ポリシーは `resource.ts` タスク 1.1 で
 // `bedrock-agentcore:ListEvents` のみに絞って付与済み）。region は `relay.ts` の
-// `REGION`（AgentCore Runtime への呼び出しと同一リージョン）を使う。
+// `REGION`（この Lambda 自身のリージョン = Amplify のデプロイ先。Memory は同一
+// スタックに作られるため同じリージョンにある）を使う。未解決の場合は
+// `undefined` が渡り、SDK 既定のリージョン解決にフォールバックする。
 const bedrockAgentCoreClient = new BedrockAgentCoreClient({ region: REGION });
 
 // ChatSession（DynamoDB）の `ownerUserId` を読み取るための SDK クライアント

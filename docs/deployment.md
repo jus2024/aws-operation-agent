@@ -7,6 +7,11 @@ Web アプリとエージェント（AgentCore Runtime / Memory）は**同じ Am
 エージェント機能を含めるかは `AGENT_ENABLED` 環境変数で切り替えます。未設定なら
 Web アプリのみがデプロイされ、AgentCore のリソースは作られません。
 
+リージョンは Amplify アプリのリージョンに揃います（コードにハードコードしていません）。
+エージェント機能を使う場合は、そのリージョンで Amazon Bedrock AgentCore が利用可能で、
+Bedrock のモデルアクセスが有効になっている必要があります。詳細は
+[docs/architecture-aws-mcp.md](architecture-aws-mcp.md#リージョンの扱い) を参照してください。
+
 ## 全体像
 
 ```
