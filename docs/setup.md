@@ -1,5 +1,9 @@
 # セットアップガイド
 
+このドキュメントは**ローカル開発環境**のセットアップと、配布用パッケージのビルドなどの
+詳細をまとめたものです。クローンしたリポジトリを Amplify Hosting にデプロイして使う手順は
+[README のセットアップ](../README.md#セットアップ) を参照してください。
+
 ## 前提条件
 
 - Node.js 20 以上
@@ -134,7 +138,7 @@ AWS リソースを操作するツールは、セッションに紐づくロー�
 ```bash
 cd agents/app/AWS_MCP_Agent
 uv run pytest
-uvx ruff check --select F .
+uvx ruff check .
 ```
 
 ### プロジェクト構成

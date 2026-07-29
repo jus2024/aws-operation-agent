@@ -12,7 +12,7 @@ Cognito 認証済みユーザーが、CopilotKit + AG-UI プロトコル経由�
 > 担っていましたが、Amplify Hosting の SSR Compute がレスポンスストリーミングを
 > サポートしない制約があったため、独立した Lambda 関数（`amplify/functions/copilotkitStreamingRelay/`、
 > Lambda 関数 URL・`InvokeMode: RESPONSE_STREAM`）に移植されました。`route.ts` は削除済みです。
-> 詳細はリポジトリルートの [README.md](../../README.md#新しい-lambda-関数copilotkitstreamingrelayについて) を参照してください。
+> 詳細はリポジトリルートの [README.md](../../README.md#中継-lambdacopilotkitstreamingrelayについて) を参照してください。
 
 ```
 ブラウザ (CopilotKit + Cognito トークン)
@@ -81,7 +81,7 @@ Cognito 認証済みユーザーが、CopilotKit + AG-UI プロトコル経由�
 この Lambda の実行ロールには `bedrock-agentcore:InvokeAgentRuntime` 権限が必要です
 （`amplify/functions/copilotkitStreamingRelay/resource.ts` で CDK が自動付与、
 Amplify Hosting のコンピューティングロールには不要）。詳細はリポジトリルートの
-[README.md](../../README.md#新しい-lambda-関数copilotkitstreamingrelayについて) を参照してください。
+[README.md](../../README.md#中継-lambdacopilotkitstreamingrelayについて) を参照してください。
 
 ## CopilotKit
 
