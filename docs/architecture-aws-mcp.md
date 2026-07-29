@@ -26,7 +26,7 @@ AWS サービスを操作します。
 > ありました。現在は `amplify/functions/copilotkitStreamingRelay/` に定義された独立の
 > Lambda 関数（Lambda 関数 URL、`InvokeMode: RESPONSE_STREAM`）が中継処理を行います。
 > `route.ts` は削除済みです。詳細はリポジトリルートの
-> [README.md](../README.md#新しい-lambda-関数copilotkitstreamingrelayについて) を参照してください。
+> [README.md](../README.md#中継-lambdacopilotkitstreamingrelayについて) を参照してください。
 
 ---
 
@@ -163,7 +163,7 @@ git push origin <ブランチ名>
 - 配布方式は direct code deployment（CodeZip）。コンテナビルドと ECR は不要
 - `copilotkitStreamingRelay` と Runtime の実行ロールは CDK が自動作成するため手動設定は不要
 - コンピューティングロールは手動で作成してアプリに設定し、`dynamodb:Scan` を付与する
-  （`/api/roles` 用。手順は [README.md](../README.md#コンピューティングロールへの権限追加について) 参照）
+  （`/api/roles` 用。手順は [README.md](../README.md#3-コンピューティングロールを設定する) 参照）
 - 環境変数の変更後は再ビルドが必要
 
 新しい依存を追加したら、先に `uv.lock` を更新してください。配布用パッケージは

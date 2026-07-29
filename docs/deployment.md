@@ -101,6 +101,68 @@ aws iam list-roles \
 ロール名を変える場合は `amplify/agent/resource.ts` の `ASSUMABLE_ROLE_NAMES` を
 書き換えてください。アカウント ID は `Stack` から解決されるため指定不要です。
 
+#### 同一アカウントのロールを追加する
+
+コードの変更も再デプロイも不要です。
+
+追加したいロールが Runtime と同じ AWS アカウントにある場合、**そのロールの信頼ポリシーに
+実行ロールを Principal として追加するだけ**で有効になります。ロール名が
+`ASSUMABLE_ROLE_NAMES` に入っていれば、CDK 側の変更も再デプロイも不要です。
+
+これは AWS IAM の仕様です。同一アカウント内であれば、ターゲットロールの信頼ポリシー
+（リソースベースポリシー）が Principal を明示的に許可していれば、呼び出し元（実行ロール）
+側のアイデンティティベースポリシーに `sts:AssumeRole` の許可がなくても `AssumeRole` は
+成功します（[IAM ロールを引き受ける（AWS ドキュメント）](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html)）。
+
+1. IAM コンソールでロールを作成する（または既存の運用ロールを開く）
+2. 「信頼関係」→「信頼ポリシーを編集」で以下を設定する
+
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "AWS": "arn:aws:iam::<ACCOUNT_ID>:role/<RUNTIME_EXECUTION_ROLE_NAME>"
+         },
+         "Action": "sts:AssumeRole"
+       }
+     ]
+   }
+   ```
+
+3. ロールに必要な権限をアタッチする（読み取り専用なら `ReadOnlyAccess`）
+4. ロール名が `ASSUMABLE_ROLE_NAMES` に無い場合は `amplify/agent/resource.ts` に追記して再デプロイする
+5. 画面の「ロール設定管理」から ARN・表示名・操作スコープを登録する
+
+#### 別アカウントのロールを追加する
+
+こちらはコードの変更と再デプロイが必要です。
+
+クロスアカウントでは信頼ポリシーだけでは足りません。AWS STS の `AssumeRole` は、
+呼び出し元のアイデンティティベースポリシーとターゲットロールの信頼ポリシーの**両方**が
+許可している必要があり、この原則はクロスアカウントでは省略されません（同一アカウント内で
+働く暗黙的な許可の仕組みが使えないためです）。
+
+1. **ターゲットアカウント側**: ロールを作成し、信頼ポリシーで実行ロールを Principal として
+   許可する（内容は同一アカウントの手順 2 と同じ）
+2. **Runtime 側（このリポジトリ）**: `amplify/agent/resource.ts` の実行ロールに、
+   別アカウントのロール ARN への `sts:AssumeRole` を追加する。`ASSUMABLE_ROLE_NAMES` は
+   同一アカウントのロール名を前提にしているため、別アカウントは ARN をフルパスで指定する
+
+   ```ts
+   executionRole.addToPolicy(
+     new iam.PolicyStatement({
+       actions: ["sts:AssumeRole"],
+       resources: ["arn:aws:iam::<別アカウントID>:role/<ロール名>"],
+     })
+   );
+   ```
+
+3. バックエンドを再デプロイする（`git push` または `AGENT_ENABLED=true npx ampx sandbox`）
+4. 画面の「ロール設定管理」から ARN・表示名・操作スコープを登録する
+
 ### 1-2. 配布用パッケージをビルドする
 
 ローカルからデプロイする場合は事前に実行します。Amplify Hosting のビルド中は
