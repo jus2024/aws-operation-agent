@@ -74,7 +74,12 @@ from __future__ import annotations
 import contextvars
 import logging
 
-from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
+from strands.hooks import (
+    AfterToolCallEvent,
+    BeforeToolCallEvent,
+    HookProvider,
+    HookRegistry,
+)
 
 from context.session_context import SessionContext
 from gateway.manager import McpClientManager
@@ -180,15 +185,28 @@ class SessionScopeAndRoleHook(HookProvider):
 
     def __init__(self, mcp_client_manager: McpClientManager) -> None:
         self._mcp_client_manager = mcp_client_manager
+        self._ensured_role_by_tool_use_id: dict[str, str] = {}
+        """Maps a tool call's `toolUseId` to the Role_Name that was
+        successfully `ensure_role()`-d for it in `_on_before_tool_call`, so
+        the paired `_on_after_tool_call` knows which role's in-flight
+        counter to `release()` -- see `gateway.manager.McpClientManager`
+        module docstring ("In-flight call tracking"). Only populated when
+        `ensure_role()` actually succeeded (i.e. the call was not rejected
+        and did not raise), since only then does the manager expect a
+        matching `release()` call. Entries are popped (not just read) by
+        `_on_after_tool_call` so this dict cannot grow unbounded across a
+        long-lived session with many tool calls.
+        """
 
     def register_hooks(self, registry: HookRegistry) -> None:
-        """Subscribe `_on_before_tool_call` to BeforeToolCallEvent.
+        """Subscribe callbacks to BeforeToolCallEvent and AfterToolCallEvent.
 
         Args:
             registry: The HookRegistry provided by the Strands Agent this
                 hook is attached to.
         """
         registry.add_callback(BeforeToolCallEvent, self._on_before_tool_call)
+        registry.add_callback(AfterToolCallEvent, self._on_after_tool_call)
 
     async def _on_before_tool_call(self, event: BeforeToolCallEvent) -> None:
         """Select a Role_Entry for this specific tool call, then ensure the subprocess runs as it.
@@ -279,6 +297,44 @@ class SessionScopeAndRoleHook(HookProvider):
         except Exception as exc:  # noqa: BLE001 - any AssumeRole/rebuild failure must be surfaced (Requirement 7.1, 7.2)
             self._reject_assume_role_failure(event, role_name, exc)
             return
+
+        # ensure_role() succeeded and incremented the in-flight counter for
+        # role_name -- remember which role this specific tool call is
+        # running against so the paired AfterToolCallEvent (below) can
+        # release() the correct counter once the call actually finishes.
+        tool_use_id = event.tool_use.get("toolUseId")
+        if tool_use_id is not None:
+            self._ensured_role_by_tool_use_id[tool_use_id] = role_name
+
+    async def _on_after_tool_call(self, event: AfterToolCallEvent) -> None:
+        """Release the in-flight slot claimed by the matching BeforeToolCallEvent, if any.
+
+        Fires once the tool call has finished (successfully or not).
+        Strands' `AfterToolCallEvent` callbacks use reverse callback
+        ordering and fire unconditionally on completion, which is exactly
+        what's needed to always pair with the `ensure_role()` call made in
+        `_on_before_tool_call` -- without this, the shared subprocess would
+        never know a role's in-flight call count dropped back to zero, and
+        a pending role change would wait forever (see
+        `gateway.manager.McpClientManager._wait_for_idle` via `ensure_role`).
+
+        A tool call that didn't reach `ensure_role()` in
+        `_on_before_tool_call` (rejected for missing/invalid role_name,
+        empty Role_Set, disallowed scope, etc., or simply not a
+        credential-requiring tool) has no entry in
+        `_ensured_role_by_tool_use_id`, so this is a no-op for those calls.
+
+        Args:
+            event: The AfterToolCallEvent for the tool call that just
+                completed.
+        """
+        tool_use_id = event.tool_use.get("toolUseId")
+        if tool_use_id is None:
+            return
+        role_name = self._ensured_role_by_tool_use_id.pop(tool_use_id, None)
+        if role_name is None:
+            return
+        await self._mcp_client_manager.release(role_name)
 
     def _reject_empty_role_set(self, event: BeforeToolCallEvent, tool_name: str) -> None:
         """Cancel the tool call because the session has no Role_Set configured.

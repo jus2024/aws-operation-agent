@@ -63,6 +63,29 @@ thread and block the caller with `Future.result(timeout=...)`), so they are
 run via `asyncio.to_thread()` to avoid blocking the event loop while the
 lock is held.
 
+In-flight call tracking (the "stop() steals a running connection" bug and
+its fix): the original design above only serialized the *rebuild* sequence
+itself. It did not account for a tool call that has already passed
+`ensure_role()` and is now executing `call_tool_async()` against the
+subprocess -- that call is *not* holding `_lock` while it awaits the MCP
+server's response. If a *different* role's tool call arrives concurrently
+(the common case when an LLM issues one `tool_use` per role in the same
+turn, e.g. "check the cost in all 4 configured accounts"), its
+`ensure_role()` sees a role change, acquires `_lock`, and calls
+`client.stop()` -- which tears down the *same* subprocess the first call's
+`call_tool_async()` is still awaiting a response from, surfacing as
+`RuntimeError("Connection to the MCP server was closed")` for the first
+call. Because the shared subprocess can only ever run as one role at a
+time, this manager now tracks the number of *in-flight* calls for the
+currently-active role (`_in_flight_count`) and, when a role change is
+needed, `ensure_role()` awaits `self._idle.wait_for(...)` (releasing
+`_lock` while waiting) until that count reaches zero before tearing down
+the subprocess. This
+intentionally serializes tool calls across a role change -- concurrent
+calls to the *same* role are unaffected and still run in parallel against
+the subprocess (Requirement: cheap reuse / no serialization penalty for
+the common single-role-per-session case).
+
 Caching behavior: once a role's subprocess is running, subsequent tool
 calls for the *same* role_name are a cheap no-op (no new AssumeRole call, no
 subprocess restart) -- this is what keeps normal operation (one role per
@@ -116,6 +139,16 @@ class McpClientManager:
         None if it has only ever been started with no explicit per-role
         credentials (the initial tool-discovery start at import time)."""
         self._lock = asyncio.Lock()
+        self._in_flight_count = 0
+        """Number of tool calls currently executing against `_active_role_name`'s
+        subprocess (between `ensure_role()` returning and the matching
+        `release()` call once that tool call finishes). A role change must
+        wait for this to reach zero before tearing down the subprocess --
+        see the `self._idle.wait_for(...)` call in `ensure_role()`."""
+        self._idle = asyncio.Condition(self._lock)
+        """Signaled by `release()` whenever `_in_flight_count` reaches zero,
+        so `ensure_role()`'s `self._idle.wait_for(...)` can wake up without
+        polling."""
 
     def build_initial_client(self) -> MCPClient:
         """Build (but do not start) the shared MCPClient with no explicit credentials.
@@ -180,13 +213,27 @@ class McpClientManager:
                 this as a tool-call cancellation with a descriptive error;
                 a subsequent call will retry the full sequence.
         """
-        if self._active_role_name == role_name:
-            return
-
         async with self._lock:
-            # Re-check inside the lock: another coroutine may have already
+            if self._active_role_name == role_name:
+                # Cheap reuse path: register this call as in-flight before
+                # releasing the lock so a concurrent role change (from a
+                # different tool call) correctly waits for it to finish
+                # (see the `self._idle.wait_for(...)` call below).
+                self._in_flight_count += 1
+                return
+
+            # A role change is needed. Wait for every in-flight call against
+            # the *currently active* role to finish before tearing down the
+            # subprocess -- otherwise `client.stop()` below would sever the
+            # connection out from under a `call_tool_async()` that is still
+            # awaiting a response (the bug this tracking exists to prevent;
+            # see module docstring "In-flight call tracking").
+            await self._idle.wait_for(lambda: self._in_flight_count == 0)
+
+            # Re-check after waking: another coroutine may have already
             # rebuilt for this exact role while we were waiting.
             if self._active_role_name == role_name:
+                self._in_flight_count += 1
                 return
 
             logger.info("gateway.manager.assuming_role", extra={"role_name": role_name})
@@ -218,4 +265,31 @@ class McpClientManager:
             await asyncio.to_thread(client.start)
 
             self._active_role_name = role_name
+            self._in_flight_count += 1
             logger.info("gateway.manager.rebuilt", extra={"role_name": role_name})
+
+    async def release(self, role_name: str) -> None:
+        """Mark one in-flight tool call against `role_name` as finished.
+
+        Must be called exactly once for every successful `ensure_role()`
+        call, after the corresponding tool call has actually completed
+        (whether it succeeded or raised) -- see `roles/hook.py`'s
+        `AfterToolCallEvent` callback, which pairs with `BeforeToolCallEvent`
+        for exactly this purpose.
+
+        If `role_name` no longer matches the currently-active role (a role
+        change already happened concurrently, which cannot occur under
+        correct pairing but is tolerated defensively), this is a no-op:
+        decrementing a stale role's counter would incorrectly unblock a
+        rebuild that is waiting on the *new* role's in-flight count instead.
+
+        Args:
+            role_name: The Role_Name that was passed to the paired
+                `ensure_role()` call.
+        """
+        async with self._lock:
+            if self._active_role_name != role_name:
+                return
+            self._in_flight_count -= 1
+            if self._in_flight_count == 0:
+                self._idle.notify_all()
