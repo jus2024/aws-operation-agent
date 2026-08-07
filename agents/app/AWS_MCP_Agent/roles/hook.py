@@ -257,10 +257,10 @@ class SessionScopeAndRoleHook(HookProvider):
         else:
             role_name = event.tool_use["input"].pop("role_name", None)
             if role_name is None:
-                self._reject_missing_role_name_param(event, tool_name)
+                self._reject_missing_role_name_param(event, tool_name, role_set)
                 return
             if role_name not in role_set:
-                self._reject_invalid_role_name(event, tool_name, role_name)
+                self._reject_invalid_role_name(event, tool_name, role_name, role_set)
                 return
 
         role_config = get_role_by_name(role_name)
@@ -298,31 +298,44 @@ class SessionScopeAndRoleHook(HookProvider):
             pass
 
     def _reject_missing_role_name_param(
-        self, event: BeforeToolCallEvent, tool_name: str
+        self, event: BeforeToolCallEvent, tool_name: str, role_set: tuple[str, ...]
     ) -> None:
         """Cancel the tool call because the LLM did not supply a role_name parameter.
 
         Only reachable when the session's Role_Set has 2+ entries, in which
         case the LLM is required to disambiguate via a `role_name`
-        parameter (Requirement 6.3).
+        parameter (Requirement 6.3). The rejection message lists the
+        current Role_Set so the LLM can immediately retry with a valid
+        value instead of needing a separate lookup call.
 
         Args:
             event: The BeforeToolCallEvent to cancel.
             tool_name: The name of the tool being rejected.
+            role_set: The current session's Role_Set (Role_Names), listed
+                in the rejection message so the LLM's next attempt can
+                supply a valid value directly.
         """
+        available = ", ".join(role_set)
         event.cancel_tool = (
             f"Tool '{tool_name}' requires a 'role_name' parameter to select which "
-            "configured AWS role/account to use, but none was provided."
+            "configured AWS role/account to use, but none was provided. "
+            f"Available role_name values for this session: {available}. "
+            "Retry this exact tool call with one of these values."
         )
         try:
             logger.warning(
-                "roles.hook.missing_role_name_param", extra={"tool_name": tool_name}
+                "roles.hook.missing_role_name_param",
+                extra={"tool_name": tool_name, "role_set": list(role_set)},
             )
         except Exception:  # noqa: BLE001 - best-effort logging only
             pass
 
     def _reject_invalid_role_name(
-        self, event: BeforeToolCallEvent, tool_name: str, role_name: str
+        self,
+        event: BeforeToolCallEvent,
+        tool_name: str,
+        role_name: str,
+        role_set: tuple[str, ...],
     ) -> None:
         """Cancel the tool call because role_name is not in the session's Role_Set.
 
@@ -331,14 +344,24 @@ class SessionScopeAndRoleHook(HookProvider):
             tool_name: The name of the tool being rejected.
             role_name: The LLM-supplied Role_Name that is not a member of
                 the current session's Role_Set.
+            role_set: The current session's Role_Set (Role_Names), listed
+                in the rejection message so the LLM's next attempt can
+                supply a valid value directly.
         """
+        available = ", ".join(role_set)
         event.cancel_tool = (
-            f"Role '{role_name}' is not part of the current session's selected roles."
+            f"Role '{role_name}' is not part of the current session's selected roles. "
+            f"Available role_name values for this session: {available}. "
+            "Retry this exact tool call with one of these values."
         )
         try:
             logger.warning(
                 "roles.hook.invalid_role_name",
-                extra={"tool_name": tool_name, "role_name": role_name},
+                extra={
+                    "tool_name": tool_name,
+                    "role_name": role_name,
+                    "role_set": list(role_set),
+                },
             )
         except Exception:  # noqa: BLE001 - best-effort logging only
             pass
