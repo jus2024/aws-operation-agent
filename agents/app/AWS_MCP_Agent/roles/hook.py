@@ -315,14 +315,24 @@ class SessionScopeAndRoleHook(HookProvider):
         what's needed to always pair with the `ensure_role()` call made in
         `_on_before_tool_call` -- without this, the shared subprocess would
         never know a role's in-flight call count dropped back to zero, and
-        a pending role change would wait forever (see
-        `gateway.manager.McpClientManager._wait_for_idle` via `ensure_role`).
+        a pending role change would wait forever (see the
+        `self._idle.wait_for(...)` call inside
+        `gateway.manager.McpClientManager.ensure_role`).
 
         A tool call that didn't reach `ensure_role()` in
         `_on_before_tool_call` (rejected for missing/invalid role_name,
         empty Role_Set, disallowed scope, etc., or simply not a
         credential-requiring tool) has no entry in
         `_ensured_role_by_tool_use_id`, so this is a no-op for those calls.
+
+        Also annotates a successful result with which role_name it ran
+        against (see `_annotate_result_with_role_name`) -- without this,
+        the LLM has no way to tell which of several parallel same-turn tool
+        calls (one per role_name, e.g. checking cost across 4 configured
+        accounts) produced which result, and has been observed re-issuing
+        every call with an explicit role_name "to be sure" even after
+        already receiving all 4 results, mistaking them for a single
+        ambiguous result.
 
         Args:
             event: The AfterToolCallEvent for the tool call that just
@@ -334,7 +344,43 @@ class SessionScopeAndRoleHook(HookProvider):
         role_name = self._ensured_role_by_tool_use_id.pop(tool_use_id, None)
         if role_name is None:
             return
+        self._annotate_result_with_role_name(event, role_name)
         await self._mcp_client_manager.release(role_name)
+
+    def _annotate_result_with_role_name(
+        self, event: AfterToolCallEvent, role_name: str
+    ) -> None:
+        """Prepend which role_name a successful tool result ran against.
+
+        Only annotates when the session's Role_Set has 2+ entries (the
+        only case in which `role_name` was ever LLM-supplied/ambiguous in
+        the first place -- see `_on_before_tool_call`) and the call
+        actually succeeded (`event.result` is a `ToolResult` dict with
+        `status == "success"`, not an `Exception` and not an error
+        result). This is a best-effort annotation: any unexpected shape of
+        `event.result` is left untouched rather than risking corrupting a
+        result the LLM still needs to see.
+
+        Args:
+            event: The AfterToolCallEvent for the tool call that just
+                completed, whose `event.result` may be mutated in place.
+            role_name: The Role_Name this specific tool call ran against
+                (from `_ensured_role_by_tool_use_id`).
+        """
+        ctx = current_session_context.get()
+        role_set = ctx.role_names if ctx is not None else ()
+        if len(role_set) < 2:
+            # Sole role for the session -- unambiguous, no annotation needed.
+            return
+
+        result = event.result
+        if not isinstance(result, dict) or result.get("status") != "success":
+            return
+        content = result.get("content")
+        if not isinstance(content, list):
+            return
+
+        content.insert(0, {"text": f"[Result for role_name={role_name!r}]"})
 
     def _reject_empty_role_set(self, event: BeforeToolCallEvent, tool_name: str) -> None:
         """Cancel the tool call because the session has no Role_Set configured.
