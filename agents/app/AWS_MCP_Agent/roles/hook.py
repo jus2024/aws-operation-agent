@@ -74,7 +74,12 @@ from __future__ import annotations
 import contextvars
 import logging
 
-from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
+from strands.hooks import (
+    AfterToolCallEvent,
+    BeforeToolCallEvent,
+    HookProvider,
+    HookRegistry,
+)
 
 from context.session_context import SessionContext
 from gateway.manager import McpClientManager
@@ -180,15 +185,28 @@ class SessionScopeAndRoleHook(HookProvider):
 
     def __init__(self, mcp_client_manager: McpClientManager) -> None:
         self._mcp_client_manager = mcp_client_manager
+        self._ensured_role_by_tool_use_id: dict[str, str] = {}
+        """Maps a tool call's `toolUseId` to the Role_Name that was
+        successfully `ensure_role()`-d for it in `_on_before_tool_call`, so
+        the paired `_on_after_tool_call` knows which role's in-flight
+        counter to `release()` -- see `gateway.manager.McpClientManager`
+        module docstring ("In-flight call tracking"). Only populated when
+        `ensure_role()` actually succeeded (i.e. the call was not rejected
+        and did not raise), since only then does the manager expect a
+        matching `release()` call. Entries are popped (not just read) by
+        `_on_after_tool_call` so this dict cannot grow unbounded across a
+        long-lived session with many tool calls.
+        """
 
     def register_hooks(self, registry: HookRegistry) -> None:
-        """Subscribe `_on_before_tool_call` to BeforeToolCallEvent.
+        """Subscribe callbacks to BeforeToolCallEvent and AfterToolCallEvent.
 
         Args:
             registry: The HookRegistry provided by the Strands Agent this
                 hook is attached to.
         """
         registry.add_callback(BeforeToolCallEvent, self._on_before_tool_call)
+        registry.add_callback(AfterToolCallEvent, self._on_after_tool_call)
 
     async def _on_before_tool_call(self, event: BeforeToolCallEvent) -> None:
         """Select a Role_Entry for this specific tool call, then ensure the subprocess runs as it.
@@ -257,10 +275,10 @@ class SessionScopeAndRoleHook(HookProvider):
         else:
             role_name = event.tool_use["input"].pop("role_name", None)
             if role_name is None:
-                self._reject_missing_role_name_param(event, tool_name)
+                self._reject_missing_role_name_param(event, tool_name, role_set)
                 return
             if role_name not in role_set:
-                self._reject_invalid_role_name(event, tool_name, role_name)
+                self._reject_invalid_role_name(event, tool_name, role_name, role_set)
                 return
 
         role_config = get_role_by_name(role_name)
@@ -280,6 +298,90 @@ class SessionScopeAndRoleHook(HookProvider):
             self._reject_assume_role_failure(event, role_name, exc)
             return
 
+        # ensure_role() succeeded and incremented the in-flight counter for
+        # role_name -- remember which role this specific tool call is
+        # running against so the paired AfterToolCallEvent (below) can
+        # release() the correct counter once the call actually finishes.
+        tool_use_id = event.tool_use.get("toolUseId")
+        if tool_use_id is not None:
+            self._ensured_role_by_tool_use_id[tool_use_id] = role_name
+
+    async def _on_after_tool_call(self, event: AfterToolCallEvent) -> None:
+        """Release the in-flight slot claimed by the matching BeforeToolCallEvent, if any.
+
+        Fires once the tool call has finished (successfully or not).
+        Strands' `AfterToolCallEvent` callbacks use reverse callback
+        ordering and fire unconditionally on completion, which is exactly
+        what's needed to always pair with the `ensure_role()` call made in
+        `_on_before_tool_call` -- without this, the shared subprocess would
+        never know a role's in-flight call count dropped back to zero, and
+        a pending role change would wait forever (see the
+        `self._idle.wait_for(...)` call inside
+        `gateway.manager.McpClientManager.ensure_role`).
+
+        A tool call that didn't reach `ensure_role()` in
+        `_on_before_tool_call` (rejected for missing/invalid role_name,
+        empty Role_Set, disallowed scope, etc., or simply not a
+        credential-requiring tool) has no entry in
+        `_ensured_role_by_tool_use_id`, so this is a no-op for those calls.
+
+        Also annotates a successful result with which role_name it ran
+        against (see `_annotate_result_with_role_name`) -- without this,
+        the LLM has no way to tell which of several parallel same-turn tool
+        calls (one per role_name, e.g. checking cost across 4 configured
+        accounts) produced which result, and has been observed re-issuing
+        every call with an explicit role_name "to be sure" even after
+        already receiving all 4 results, mistaking them for a single
+        ambiguous result.
+
+        Args:
+            event: The AfterToolCallEvent for the tool call that just
+                completed.
+        """
+        tool_use_id = event.tool_use.get("toolUseId")
+        if tool_use_id is None:
+            return
+        role_name = self._ensured_role_by_tool_use_id.pop(tool_use_id, None)
+        if role_name is None:
+            return
+        self._annotate_result_with_role_name(event, role_name)
+        await self._mcp_client_manager.release(role_name)
+
+    def _annotate_result_with_role_name(
+        self, event: AfterToolCallEvent, role_name: str
+    ) -> None:
+        """Prepend which role_name a successful tool result ran against.
+
+        Only annotates when the session's Role_Set has 2+ entries (the
+        only case in which `role_name` was ever LLM-supplied/ambiguous in
+        the first place -- see `_on_before_tool_call`) and the call
+        actually succeeded (`event.result` is a `ToolResult` dict with
+        `status == "success"`, not an `Exception` and not an error
+        result). This is a best-effort annotation: any unexpected shape of
+        `event.result` is left untouched rather than risking corrupting a
+        result the LLM still needs to see.
+
+        Args:
+            event: The AfterToolCallEvent for the tool call that just
+                completed, whose `event.result` may be mutated in place.
+            role_name: The Role_Name this specific tool call ran against
+                (from `_ensured_role_by_tool_use_id`).
+        """
+        ctx = current_session_context.get()
+        role_set = ctx.role_names if ctx is not None else ()
+        if len(role_set) < 2:
+            # Sole role for the session -- unambiguous, no annotation needed.
+            return
+
+        result = event.result
+        if not isinstance(result, dict) or result.get("status") != "success":
+            return
+        content = result.get("content")
+        if not isinstance(content, list):
+            return
+
+        content.insert(0, {"text": f"[Result for role_name={role_name!r}]"})
+
     def _reject_empty_role_set(self, event: BeforeToolCallEvent, tool_name: str) -> None:
         """Cancel the tool call because the session has no Role_Set configured.
 
@@ -298,31 +400,44 @@ class SessionScopeAndRoleHook(HookProvider):
             pass
 
     def _reject_missing_role_name_param(
-        self, event: BeforeToolCallEvent, tool_name: str
+        self, event: BeforeToolCallEvent, tool_name: str, role_set: tuple[str, ...]
     ) -> None:
         """Cancel the tool call because the LLM did not supply a role_name parameter.
 
         Only reachable when the session's Role_Set has 2+ entries, in which
         case the LLM is required to disambiguate via a `role_name`
-        parameter (Requirement 6.3).
+        parameter (Requirement 6.3). The rejection message lists the
+        current Role_Set so the LLM can immediately retry with a valid
+        value instead of needing a separate lookup call.
 
         Args:
             event: The BeforeToolCallEvent to cancel.
             tool_name: The name of the tool being rejected.
+            role_set: The current session's Role_Set (Role_Names), listed
+                in the rejection message so the LLM's next attempt can
+                supply a valid value directly.
         """
+        available = ", ".join(role_set)
         event.cancel_tool = (
             f"Tool '{tool_name}' requires a 'role_name' parameter to select which "
-            "configured AWS role/account to use, but none was provided."
+            "configured AWS role/account to use, but none was provided. "
+            f"Available role_name values for this session: {available}. "
+            "Retry this exact tool call with one of these values."
         )
         try:
             logger.warning(
-                "roles.hook.missing_role_name_param", extra={"tool_name": tool_name}
+                "roles.hook.missing_role_name_param",
+                extra={"tool_name": tool_name, "role_set": list(role_set)},
             )
         except Exception:  # noqa: BLE001 - best-effort logging only
             pass
 
     def _reject_invalid_role_name(
-        self, event: BeforeToolCallEvent, tool_name: str, role_name: str
+        self,
+        event: BeforeToolCallEvent,
+        tool_name: str,
+        role_name: str,
+        role_set: tuple[str, ...],
     ) -> None:
         """Cancel the tool call because role_name is not in the session's Role_Set.
 
@@ -331,14 +446,24 @@ class SessionScopeAndRoleHook(HookProvider):
             tool_name: The name of the tool being rejected.
             role_name: The LLM-supplied Role_Name that is not a member of
                 the current session's Role_Set.
+            role_set: The current session's Role_Set (Role_Names), listed
+                in the rejection message so the LLM's next attempt can
+                supply a valid value directly.
         """
+        available = ", ".join(role_set)
         event.cancel_tool = (
-            f"Role '{role_name}' is not part of the current session's selected roles."
+            f"Role '{role_name}' is not part of the current session's selected roles. "
+            f"Available role_name values for this session: {available}. "
+            "Retry this exact tool call with one of these values."
         )
         try:
             logger.warning(
                 "roles.hook.invalid_role_name",
-                extra={"tool_name": tool_name, "role_name": role_name},
+                extra={
+                    "tool_name": tool_name,
+                    "role_name": role_name,
+                    "role_set": list(role_set),
+                },
             )
         except Exception:  # noqa: BLE001 - best-effort logging only
             pass
